@@ -11,6 +11,7 @@
 		69CA06091CC43C2900AF6479 /* RCTBluetoothSerial.m in Sources */ = {isa = PBXBuildFile; fileRef = 69CA06081CC43C2900AF6479 /* RCTBluetoothSerial.m */; };
 		69CA06161CC49D5E00AF6479 /* BLE.m in Sources */ = {isa = PBXBuildFile; fileRef = 69CA06101CC49D5E00AF6479 /* BLE.m */; };
 		69CA06171CC49D5E00AF6479 /* CBPeripheral+BTSExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 69CA06131CC49D5E00AF6479 /* CBPeripheral+BTSExtensions.m */; };
+		E6BE900421A599FC00BF1485 /* JCBabyPrinterTool.m in Sources */ = {isa = PBXBuildFile; fileRef = E6BE900221A599FB00BF1485 /* JCBabyPrinterTool.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -35,6 +36,8 @@
 		69CA06111CC49D5E00AF6479 /* BLEDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BLEDefines.h; sourceTree = "<group>"; };
 		69CA06121CC49D5E00AF6479 /* CBPeripheral+BTSExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "CBPeripheral+BTSExtensions.h"; sourceTree = "<group>"; };
 		69CA06131CC49D5E00AF6479 /* CBPeripheral+BTSExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "CBPeripheral+BTSExtensions.m"; sourceTree = "<group>"; };
+		E6BE900221A599FB00BF1485 /* JCBabyPrinterTool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JCBabyPrinterTool.m; sourceTree = "<group>"; };
+		E6BE900321A599FB00BF1485 /* JCBabyPrinterTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JCBabyPrinterTool.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -74,6 +77,8 @@
 				69CA06131CC49D5E00AF6479 /* CBPeripheral+BTSExtensions.m */,
 				69CA06061CC43C2900AF6479 /* RCTBluetoothSerial.h */,
 				69CA06081CC43C2900AF6479 /* RCTBluetoothSerial.m */,
+				E6BE900321A599FB00BF1485 /* JCBabyPrinterTool.h */,
+				E6BE900221A599FB00BF1485 /* JCBabyPrinterTool.m */,
 			);
 			path = RCTBluetoothSerial;
 			sourceTree = "<group>";
@@ -137,6 +142,7 @@
 				69CA06091CC43C2900AF6479 /* RCTBluetoothSerial.m in Sources */,
 				69CA06161CC49D5E00AF6479 /* BLE.m in Sources */,
 				69CA06171CC49D5E00AF6479 /* CBPeripheral+BTSExtensions.m in Sources */,
+				E6BE900421A599FC00BF1485 /* JCBabyPrinterTool.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
