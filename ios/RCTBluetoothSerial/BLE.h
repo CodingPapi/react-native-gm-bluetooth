@@ -17,8 +17,13 @@
 #else
     #import <IOBluetooth/IOBluetooth.h>
 #endif
+#import <UIKit/UIKit.h>
+#include <CoreGraphics/CGImage.h>
+#import <CoreImage/CoreImage.h>
+#import "zlib.h"
 
 #import "CBPeripheral+BTSExtensions.h"
+
 
 @protocol BLEDelegate
 @optional

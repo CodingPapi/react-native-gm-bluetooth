@@ -657,4 +657,391 @@ static bool done = false;
     }
 }
 
+// B3 Printer method
+
+- (void)createAndPrintImg:(NSString *)qrContent textSize:(float) textSize rotation:(int) rotation gotoPaper:(int) gotoPaper
+                      width:(int) width height:(int) height qrSideLength:(int) qrSideLength x1:(float) x1 x2:(float) x2 x3:(float) x3 qrX:(float) qrX
+                         y1:(float) y1 y2:(float) y2 y3:(float) y3 y4:(float) y4 qrY:(float) qrY name:(NSString *) name code: (NSString *) code spec:(NSString *) spec
+                   material:(NSString *) material principal:(NSString *) principal supplier:(NSString *) supplier description:(NSString *) description {
+    
+    // make label image
+    CGRect rect = CGRectMake(0, 0, width, height);
+    UIGraphicsBeginImageContextWithOptions(rect.size, YES, 1);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextSetFillColorWithColor(context, [UIColor.whiteColor CGColor]);
+    CGContextFillRect(context, rect);
+    // make qrCode
+    UIImage* qrCodeImg = [self createQrCode:qrContent sideLength:qrSideLength];
+    // font config
+    UIFont* font = [UIFont boldSystemFontOfSize:textSize];
+    NSDictionary* fontAttr = @{NSFontAttributeName:font, NSForegroundColorAttributeName:[UIColor blackColor]};
+    // draw qrCode
+    [qrCodeImg drawInRect:CGRectMake(qrX, qrY, qrCodeImg.size.width, qrCodeImg.size.height)];
+    
+    // draw text
+    [name drawAtPoint:CGPointMake(x1, y1) withAttributes:fontAttr];
+    [code drawAtPoint:CGPointMake(x2, y1) withAttributes:fontAttr];
+    [spec drawAtPoint:CGPointMake(x1, y2) withAttributes:fontAttr];
+    [material drawAtPoint:CGPointMake(x2, y2) withAttributes:fontAttr];
+    [principal drawAtPoint:CGPointMake(x1, y3) withAttributes:fontAttr];
+    [supplier drawAtPoint:CGPointMake(x2, y3) withAttributes:fontAttr];
+    [description drawAtPoint:CGPointMake(x3, y4) withAttributes:fontAttr];
+    
+    UIImage* oriImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    // perform rotation
+    UIImage* rotatedImage = [self imageRotatedByDegrees:oriImage degrees:rotation];
+    // get image bytes
+    
+    NSData * imageData = [self getImageData:rotatedImage];
+    
+    //write image data
+
+    [self write:imageData];
+    
+    
+    // write label type data
+    // 0：连续纸；1：定位孔(如不支持定位孔，则调整至间隙纸)；2：间隙纸；3：黑标纸。
+    if(gotoPaper ==0)
+    {
+        
+    }
+    if(gotoPaper ==1)
+    {
+        Byte a[2] ;
+        a[0]=0x1d;a[1]=0x0c;
+        NSData *adata = [[NSData alloc] initWithBytes:a length:2];
+        [self write:adata];
+    }
+    if(gotoPaper ==2)
+    {
+        Byte a[2] ;
+        a[0]=0x1d;a[1]=0x0c;
+        NSData *adata = [[NSData alloc] initWithBytes:a length:2];
+        [self write:adata];
+    }
+    if(gotoPaper ==3) //左黑标
+    {
+        Byte a[1] ;
+        a[0]=0x0c;
+        NSData *adata = [[NSData alloc] initWithBytes:a length:1];
+        [self write:adata];
+    }
+    if(gotoPaper ==4) //右黑标
+    {
+        Byte a[1] ;
+        a[0]=0x0e;
+        NSData *adata = [[NSData alloc] initWithBytes:a length:1];
+        [self write:adata];
+    }
+}
+
+- (NSData *) getImageData:(UIImage *)image {
+    size_t width = CGImageGetWidth(image.CGImage);
+    size_t height = CGImageGetHeight(image.CGImage);
+    
+    size_t bytesPerRow = (width - 1) / 8 + 1;
+    int bytesLength = bytesPerRow * height;
+    
+    uint8_t imageBytes[bytesLength];
+    [self cnc_getCompressedBinaryzationBytes:imageBytes reverse:YES img:image.CGImage];
+    
+    //NSString *begin;
+    
+    Byte *oriImageBuffer = (Byte*)malloc(bytesLength);
+    memcpy(oriImageBuffer, imageBytes, bytesLength);
+    NSData *oriImageData = [[NSData alloc] initWithBytes:oriImageBuffer length:bytesPerRow * height];
+    Byte result[1024*1000];
+    //Byte result[bytesLength];
+    int offset=0;
+    int sended=0;
+    while(sended<bytesPerRow * height)
+    {
+        Byte b[4]={0x1f,0x10,bytesPerRow%256,bytesPerRow/256};
+        //[self addData:b length:4];
+        memcpy(result + offset, b, 4);
+        offset += 4;
+        NSData *d = [oriImageData subdataWithRange:NSMakeRange(sended, bytesPerRow)];
+        memcpy(result + offset, [d bytes], [d length]);
+        offset += [d length];
+    }
+    
+    NSData *data;
+    data = [[NSData alloc]initWithBytes:result length:offset];
+    
+    NSData *dataDeflate = [self gzipData:data];
+    
+    return dataDeflate;
+}
+
+- (UIImage *)createQrCode:(NSString *)qrContent sideLength:(int) sideLength {
+    CIFilter *filter = [CIFilter filterWithName:@"CIQRCodeGenerator"];
+    [filter setDefaults];
+    NSData *data = [qrContent dataUsingEncoding:NSUTF8StringEncoding];
+    [filter setValue:data forKeyPath:@"inputMessage"];
+    CIImage *image = [filter outputImage];
+    
+    CGRect extent = CGRectIntegral(image.extent);
+    CGFloat scale = MIN(sideLength/CGRectGetWidth(extent), sideLength/CGRectGetHeight(extent));
+    
+    size_t width = CGRectGetWidth(extent) * scale;
+    size_t height = CGRectGetHeight(extent) * scale;
+    CGColorSpaceRef cs = CGColorSpaceCreateDeviceGray();
+    CGContextRef bitmapRef = CGBitmapContextCreate(nil, width, height, 8, 0, cs, (CGBitmapInfo)kCGImageAlphaNone);
+    CIContext *context = [CIContext contextWithOptions:nil];
+    CGImageRef bitmapImg = [context createCGImage:image fromRect:extent];
+    CGContextSetInterpolationQuality(bitmapRef, kCGInterpolationNone);
+    CGContextScaleCTM(bitmapRef, scale, scale);
+    CGContextDrawImage(bitmapRef, extent, bitmapImg);
+    
+    CGImageRef scaledImage = CGBitmapContextCreateImage(bitmapRef);
+    CGContextRelease(bitmapRef);
+    CGImageRelease(bitmapImg);
+    return [UIImage imageWithCGImage:scaledImage];
+}
+
+- (UIImage *)imageRotatedByDegrees:(UIImage *)image degrees:(CGFloat)degrees {
+    CGFloat radians = degrees * (M_PI / 180.0);
+    
+    UIView *rotatedViewBox = [[UIView alloc] initWithFrame:CGRectMake(0,0, image.size.width, image.size.height)];
+    CGAffineTransform t = CGAffineTransformMakeRotation(radians);
+    rotatedViewBox.transform = t;
+    CGSize rotatedSize = rotatedViewBox.frame.size;
+    
+    UIGraphicsBeginImageContextWithOptions(rotatedSize, NO, 1);
+    CGContextRef bitmap = UIGraphicsGetCurrentContext();
+    
+    CGContextTranslateCTM(bitmap, rotatedSize.width / 2, rotatedSize.height / 2);
+    
+    CGContextRotateCTM(bitmap, radians);
+    
+    CGContextScaleCTM(bitmap, 1.0, -1.0);
+    CGContextDrawImage(bitmap, CGRectMake(-image.size.width / 2, -image.size.height / 2 , image.size.width, image.size.height), image.CGImage );
+    
+    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    return newImage;
+}
+
+//压缩
+- (NSData*) gzipData: (NSData*)pUncompressedData
+{
+    if (!pUncompressedData || [pUncompressedData length] == 0)
+    {
+        NSLog(@"%s: Error: Can't compress an empty or null NSData object.", __func__);
+        return nil;
+    }
+    int deflateStatus;
+    float buffer = 1.1;
+    do {
+        z_stream zlibStreamStruct;
+        zlibStreamStruct.zalloc    = Z_NULL; // Set zalloc, zfree, and opaque to Z_NULL so
+        zlibStreamStruct.zfree     = Z_NULL; // that when we call deflateInit2 they will be
+        zlibStreamStruct.opaque    = Z_NULL; // updated to use default allocation functions.
+        zlibStreamStruct.total_out = 0; // Total number of output bytes produced so far
+        zlibStreamStruct.next_in   = (Bytef*)[pUncompressedData bytes]; // Pointer to input bytes
+        zlibStreamStruct.avail_in  = (uInt)[pUncompressedData length]; // Number of input bytes left to process
+        int initError = deflateInit2(&zlibStreamStruct, Z_DEFAULT_COMPRESSION, Z_DEFLATED, (15+16), 8, Z_DEFAULT_STRATEGY);
+        if (initError != Z_OK)
+        {
+            NSString *errorMsg = nil;
+            switch (initError)
+            {
+                case Z_STREAM_ERROR:
+                    errorMsg = @"Invalid parameter passed in to function.";
+                    break;
+                case Z_MEM_ERROR:
+                    errorMsg = @"Insufficient memory.";
+                    break;
+                case Z_VERSION_ERROR:
+                    errorMsg = @"The version of zlib.h and the version of the library linked do not match.";
+                    break;
+                default:
+                    errorMsg = @"Unknown error code.";
+                    break;
+            }
+            NSLog(@"%s: deflateInit2() Error: \"%@\" Message: \"%s\"", __func__, errorMsg, zlibStreamStruct.msg);
+            return nil;
+        }
+        
+        // Create output memory buffer for compressed data. The zlib documentation states that
+        // destination buffer size must be at least 0.1% larger than avail_in plus 12 bytes.
+        NSMutableData *compressedData = [NSMutableData dataWithLength:[pUncompressedData length] * buffer + 12];
+        do {
+            // Store location where next byte should be put in next_out
+            zlibStreamStruct.next_out = [compressedData mutableBytes] + zlibStreamStruct.total_out;
+            // Calculate the amount of remaining free space in the output buffer
+            // by subtracting the number of bytes that have been written so far
+            // from the buffer's total capacity
+            zlibStreamStruct.avail_out = (uInt)([compressedData length] - zlibStreamStruct.total_out);
+            deflateStatus = deflate(&zlibStreamStruct, Z_FINISH);
+        } while ( deflateStatus == Z_OK );
+        if (deflateStatus == Z_BUF_ERROR && buffer < 32) {
+            continue;
+        }
+        // Check for zlib error and convert code to usable error message if appropriate
+        if (deflateStatus != Z_STREAM_END) {
+            NSString *errorMsg = nil;
+            switch (deflateStatus)
+            {
+                case Z_ERRNO:
+                    errorMsg = @"Error occured while reading file.";
+                    break;
+                case Z_STREAM_ERROR:
+                    errorMsg = @"The stream state was inconsistent (e.g., next_in or next_out was NULL).";
+                    break;
+                case Z_DATA_ERROR:
+                    errorMsg = @"The deflate data was invalid or incomplete.";
+                    break;
+                case Z_MEM_ERROR:
+                    errorMsg = @"Memory could not be allocated for processing.";
+                    break;
+                case Z_BUF_ERROR:
+                    errorMsg = @"Ran out of output buffer for writing compressed bytes.";
+                    break;
+                case Z_VERSION_ERROR:
+                    errorMsg = @"The version of zlib.h and the version of the library linked do not match.";
+                    break;
+                default:
+                    errorMsg = @"Unknown error code.";
+                    break;
+            }
+            NSLog(@"%s: zlib error while attempting compression: \"%@\" Message: \"%s\"", __func__, errorMsg, zlibStreamStruct.msg);
+            // Free data structures that were dynamically created for the stream.
+            deflateEnd(&zlibStreamStruct);
+            return nil;
+        }
+        
+        // Free data structures that were dynamically created for the stream.
+        deflateEnd(&zlibStreamStruct);
+        [compressedData setLength: zlibStreamStruct.total_out];
+        int countsize=compressedData.length;
+        Byte aa[] ={(countsize>>0)&0xff};
+        Byte bb[] = {(countsize>>8)&0xff};
+        Byte cc[] = {(countsize>>16)&0xff};
+        Byte dd[] = {(countsize>>24)&0xff};
+        [compressedData replaceBytesInRange:NSMakeRange(4, 1) withBytes:aa length:1];
+        [compressedData replaceBytesInRange:NSMakeRange(5, 1) withBytes:bb length:1];
+        [compressedData replaceBytesInRange:NSMakeRange(6, 1) withBytes:cc length:1];
+        [compressedData replaceBytesInRange:NSMakeRange(7, 1) withBytes:dd length:1];
+        
+        uLong crc = crc32(0L, Z_NULL, 0);
+        crc = crc32(crc, compressedData.bytes+8,compressedData.length-12);
+        
+        Byte a[] ={(crc>>0)&0xff};
+        Byte b[] = {(crc>>8)&0xff};
+        Byte c[] = {(crc>>16)&0xff};
+        Byte d[] = {(crc>>24)&0xff};
+        
+        [compressedData replaceBytesInRange:NSMakeRange(countsize-4, 1) withBytes:a length:1];
+        [compressedData replaceBytesInRange:NSMakeRange(countsize-3, 1) withBytes:b length:1];
+        [compressedData replaceBytesInRange:NSMakeRange(countsize-2, 1) withBytes:c length:1];
+        [compressedData replaceBytesInRange:NSMakeRange(countsize-1, 1) withBytes:d length:1];
+        return compressedData;
+    } while ( false );
+    return nil;
+}
+
+- (void)cnc_getBinaryzationBytes:(char *)data reverse:(BOOL)reverse img:(CGImageRef) img
+{
+    [self cnc_getBinaryzationBytes:data threshold:128 reverse:reverse img:img];
+}
+
+- (void)cnc_getBinaryzationBytes:(char *)data threshold:(int)threshold reverse:(BOOL)reverse img:(CGImageRef) img
+{
+    if (!data) {
+        return;
+    }
+    
+    CGImageRef imageRef = img;
+    size_t width = CGImageGetWidth(imageRef);
+    size_t height = CGImageGetHeight(imageRef);
+    
+    uint32_t *pixels = malloc(width * height * sizeof(uint32_t));
+    if (!pixels) {
+        return;
+    }
+    
+    size_t byteWidth = (width - 1) / 8 + 1;
+    //Byte s[(4+byteWidth)*height];
+    //NSString * string;
+    size_t bytesPerPixel = 4;
+    size_t bytesPerRow = bytesPerPixel * width;
+    size_t bitsPerComponent = 8;
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    
+    CGContextRef context = CGBitmapContextCreate(pixels,
+                                                 width,
+                                                 height,
+                                                 bitsPerComponent,
+                                                 bytesPerRow,
+                                                 colorSpace,
+                                                 kCGBitmapByteOrder32Little | kCGImageAlphaPremultipliedFirst);
+    
+    CGContextDrawImage(context, CGRectMake(0, 0, width, height), imageRef);
+    
+    for (int i = 0; i < height; i++) {
+        
+        
+        for (int j = 0; j < width; j++) {
+            
+            uint8_t *rgbaPixel = (uint8_t *)&pixels[i * width + j];
+            
+            // http://en.wikipedia.org/wiki/Grayscale#Converting_color_to_grayscale
+            uint8_t gray = 0.299 * rgbaPixel[2] + 0.587 * rgbaPixel[1] + 0.114 * rgbaPixel[0];
+            data[i * width + j] = gray < threshold ? (uint8_t)reverse : (uint8_t)!reverse;
+            
+        }
+    }
+    
+    CGColorSpaceRelease(colorSpace);
+    CGContextRelease(context);
+    
+    if (pixels) {
+        free(pixels);
+    }
+}
+
+- (void)cnc_getCompressedBinaryzationBytes:(char *)data  reverse:(BOOL)reverse img:(CGImageRef) img
+{
+    int threshold=128;
+    bool littleEndian=NO;
+    if (!data) {
+        return;
+    }
+    
+    CGImageRef imageRef = img;
+    size_t width = CGImageGetWidth(imageRef);
+    size_t height = CGImageGetHeight(imageRef);
+    
+    uint8_t *imageBytes = malloc(width * height * sizeof(uint8_t));
+    if (!imageBytes) {
+        return;
+    }
+    
+    [self cnc_getBinaryzationBytes:imageBytes threshold:threshold reverse:reverse img:img];
+    size_t byteWidth = (width - 1) / 8 + 1;
+    //Byte s[(4+byteWidth)*height];
+    for (int i = 0; i < height; i++) {
+        for (int j = 0; j < byteWidth; j++) {
+            uint8_t unit = 0;
+            for (int k = 0; k < 8; k++) {
+                if (((j << 3) + k) < width) {
+                    uint8_t pixel = imageBytes[i * width + (j << 3) + k];
+                    if (littleEndian) {
+                        unit |= (pixel & 1) << k;
+                    } else {
+                        unit |= (pixel & 1) << (7 - k);
+                    }
+                }
+            }
+            
+            data[i * byteWidth + j] = unit;
+        }
+    }
+    if (imageBytes) {
+        free(imageBytes);
+    }
+}
 @end
