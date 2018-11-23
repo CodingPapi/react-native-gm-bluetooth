@@ -164,6 +164,40 @@ RCT_EXPORT_METHOD(writeHexToDevice:(NSString *)hexString
     }
 }
 
+// B3 Printer Method
+RCT_EXPORT_METHOD(b3Print:(NSDictionary *)info
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejector:(RCTPromiseRejectBlock)reject)
+{
+    NSLog(@"b3Print");
+    NSString *qrContent = [RCTConvert NSString:info[@"qrContent"]];
+    float textSize = [RCTConvert float:info[@"textSize"]];
+    int rotation = [RCTConvert int:info[@"rotation"]];
+    int gotoPager = [RCTConvert int:info[@"gotoPager"]];
+    int width = [RCTConvert int:info[@"width"]];
+    int height = [RCTConvert int:info[@"height"]];
+    int qrSideLength = [RCTConvert int:info[@"qrSideLength"]];
+    float x1 = [RCTConvert float:info[@"x1"]];
+    float x2 = [RCTConvert float:info[@"x2"]];
+    float x3 = [RCTConvert float:info[@"x3"]];
+    float qrX = [RCTConvert float:info[@"qrX"]];
+    float y1 = [RCTConvert float:info[@"y1"]];
+    float y2 = [RCTConvert float:info[@"y2"]];
+    float y3 = [RCTConvert float:info[@"y3"]];
+    float y4 = [RCTConvert float:info[@"y4"]];
+    float qrY = [RCTConvert float:info[@"qrY"]];
+    NSString *name = [RCTConvert NSString:info[@"name"]];
+    NSString *code = [RCTConvert NSString:info[@"code"]];
+    NSString *spec = [RCTConvert NSString:info[@"spec"]];
+    NSString *material = [RCTConvert NSString:info[@"material"]];
+    NSString *principal = [RCTConvert NSString:info[@"principal"]];
+    NSString *supplier = [RCTConvert NSString:info[@"supplier"]];
+    NSString *description = [RCTConvert NSString:info[@"description"]];
+    
+    [_bleShield createAndPrintImg:qrContent textSize:textSize rotation:rotation gotoPaper:gotoPager width:width height:height qrSideLength:qrSideLength x1:x1 x2:x2 x3:x3 qrX:qrX y1:y1 y2:y2 y3:y3 y4:y4 qrY:qrY name:name code:code spec:spec material:material principal:principal supplier:supplier description:description];
+    
+    resolve(true);
+}
 -(NSData*) hexToBytes:(NSString *)hexString {
     hexString = [hexString stringByReplacingOccurrencesOfString:@" " withString: @""];
     NSMutableData* data = [NSMutableData data];

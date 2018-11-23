@@ -76,4 +76,10 @@
 -(UInt16) CBUUIDToInt:(CBUUID *) UUID;
 -(BOOL) UUIDSAreEqual:(NSUUID *)UUID1 UUID2:(NSUUID *)UUID2;
 
+//B3 printer
+- (void)createAndPrintImg:(NSString *)qrContent textSize:(float) textSize rotation:(int) rotation gotoPaper:(int) gotoPaper
+                    width:(int) width height:(int) height qrSideLength:(int) qrSideLength x1:(float) x1 x2:(float) x2 x3:(float) x3 qrX:(float) qrX
+                       y1:(float) y1 y2:(float) y2 y3:(float) y3 y4:(float) y4 qrY:(float) qrY name:(NSString *) name code: (NSString *) code spec:(NSString *) spec
+                 material:(NSString *) material principal:(NSString *) principal supplier:(NSString *) supplier description:(NSString *) description;
+
 @end
