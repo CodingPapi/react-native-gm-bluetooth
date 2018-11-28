@@ -9,6 +9,15 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
 
+import com.google.zxing.BarcodeFormat;
+import com.journeyapps.barcodescanner.BarcodeEncoder;
+
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.zip.CRC32;
+import java.util.zip.GZIPOutputStream;
+
 import static com.gm.RCTGMBluetooth.RCTGMBluetoothPackage.TAG;
 
 /**
@@ -109,6 +118,167 @@ class RCTGMBluetoothService {
 
         setState(STATE_NONE);
     }
+
+    /*********************/
+    /** B3 Printer methods **/
+    /*********************/
+
+    void createThenPrint(String qrContent, float textSize, int rotation, int gotoPaper,
+                                 int width, int height, int qrSideLength,
+                                 float x1, float x2, float x3, float qrX,
+                                 float y1, float y2, float y3, float y4, float qrY,
+                                 String name, String code, String spec, String material,
+                                 String principal, String supplier, String description) {
+
+        Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
+        Canvas canvas = new Canvas(bitmap);
+        Paint paint = new Paint();
+        paint.setColor(Color.BLACK);
+        paint.setTextSize(textSize);
+        paint.setTextAlign(Paint.Align.LEFT);
+        paint.setStrokeWidth(1.0f);
+        canvas.drawColor(Color.WHITE);
+
+        // first stage, generate QRCode
+        // second stage, draw QRCode and text onto bitmap
+        // third stage, send bitmap object to printer
+        Bitmap qrCode = null;
+        try {
+            BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
+            qrCode = barcodeEncoder.encodeBitmap(qrContent, BarcodeFormat.QR_CODE, qrSideLength, qrSideLength);
+        } catch (Exception e) {
+
+        }
+
+        if (qrCode != null) {
+            canvas.drawBitmap(qrCode, qrX, qrY, paint);
+        }
+
+        canvas.drawText(name, x1, y1, paint);
+        canvas.drawText(spec, x1, y2, paint);
+        canvas.drawText(principal, x1, y3, paint);
+        canvas.drawText(code, x2, y1, paint);
+        canvas.drawText(material, x2, y2, paint);
+        canvas.drawText(supplier, x2, y3, paint);
+        canvas.drawText(description, x3, y4, paint);
+
+        int labelWidth = 0;
+        int labelHeight = 0;
+        if (rotation == 90 || rotation == 270) {
+            labelWidth = bitmap.getHeight();
+            labelHeight = bitmap.getWidth();
+        } else {
+            labelWidth = bitmap.getWidth();
+            labelHeight = bitmap.getHeight();
+        }
+
+        labelHeight = labelHeight > 600 ? 600 : labelHeight;
+
+        Matrix matrix = new Matrix();
+        matrix.postRotate(rotation);
+        Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+        bitmap.recycle();
+
+        performPrint(rotatedBitmap, gotoPaper);
+
+    }
+
+    private performPrint(Bitmap bitmap, int gotoPaper) {
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+
+//        if (width > PrinterDotWidth) {
+//            width = PrinterDotWidth;
+//        }
+
+        int len = (width + 7) / 8;
+        byte[] data = new byte[(len + 4) * height];
+        int ndata = 0;
+        int[] RowData = new int[width * height];
+        bitmap.getPixels(RowData, 0, width, 0, 0, width, height);
+
+        for (int i = 0; i < height; ++i) {
+            data[ndata + 0] = 31;
+            data[ndata + 1] = 16;
+            data[ndata + 2] = (byte) (len % 256);
+            data[ndata + 3] = (byte) (len / 256);
+
+            for (int j = 0; j < len; ++j) {
+                data[ndata + 4 + j] = 0;
+            }
+
+            int size;
+            for (int j = 0; j < width; ++j) {
+                size = RowData[i * width + j];
+                int b = size >> 0 & 255;
+                int g = size >> 8 & 255;
+                int r = size >> 16 & 255;
+                int grey = (r + g + b) / 3;
+                if (grey < 128) {
+                    data[ndata + 4 + j / 8] |= (byte) (128 >> j % 8);
+                }
+            }
+
+            for (size = len - 1; size >= 0 && data[ndata + 4 + size] == 0; --size) {
+                ;
+            }
+
+            ++size;
+            data[ndata + 2] = (byte) (len % 256);
+            data[ndata + 3] = (byte) (len / 256);
+            ndata += 4 + len;
+        }
+
+        data = codec(data, ndata);
+        write(data);
+
+        if (gotoPaper == 1) {
+            write(new byte[]{29, 12});
+        }
+
+        if (gotoPaper == 2) {
+            write(new byte[]{14});
+        }
+
+        if (gotoPaper == 3) {
+            write(new byte[]{12});
+        }
+
+        if (gotoPaper == 4) {
+            write(new byte[]{29, 12});
+        }
+    }
+
+    private byte[] codec(byte[] data, int len) {
+        byte[] gzipData = (byte[]) null;
+        ByteArrayOutputStream gzipStram = new ByteArrayOutputStream();
+
+        try {
+            GZIPOutputStream zos = new GZIPOutputStream(new BufferedOutputStream(gzipStram));
+            zos.write(data);
+            zos.close();
+        } catch (IOException var9) {
+            var9.printStackTrace();
+            mModule.onError(var9);
+        }
+
+        gzipData = gzipStram.toByteArray();
+        long length = (long) gzipData.length;
+        CRC32 crc32 = new CRC32();
+        crc32.update(gzipData, 8, (int) (length - 8L - 4L));
+        long crc = crc32.getValue();
+        gzipData[4] = (byte) ((int) (length >> 0 & 255L));
+        gzipData[5] = (byte) ((int) (length >> 8 & 255L));
+        gzipData[6] = (byte) ((int) (length >> 16 & 255L));
+        gzipData[7] = (byte) ((int) (length >> 24 & 255L));
+        gzipData[gzipData.length - 4] = (byte) ((int) (crc >> 0 & 255L));
+        gzipData[gzipData.length - 3] = (byte) ((int) (crc >> 8 & 255L));
+        gzipData[gzipData.length - 2] = (byte) ((int) (crc >> 16 & 255L));
+        gzipData[gzipData.length - 1] = (byte) ((int) (crc >> 24 & 255L));
+        return gzipData;
+    }
+
+
 
     /*********************/
     /** Private methods **/

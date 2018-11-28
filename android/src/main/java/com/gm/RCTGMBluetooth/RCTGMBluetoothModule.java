@@ -21,6 +21,7 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.Promise;
@@ -434,6 +435,42 @@ public class RCTGMBluetoothModule extends ReactContextBaseJavaModule implements 
         if (mBluetoothAdapter != null) {
             mBluetoothAdapter.setName(newName);
         }
+        promise.resolve(true);
+    }
+
+    @ReactMethod
+    /**
+     * Print by B3 bluetooth printer
+     */
+    public void b3Print(ReadableMap info, Promise promise) {
+        if (D) Log.d(TAG, "b3Print " + info.toString());
+
+        String qrContent = options.hasKey("qrContent") ? options.getString("qrContent") : "";
+        double textSize = options.hasKey("textSize") ? options.getDouble("textSize") : 16D;
+        int rotation = options.hasKey("rotation") ? options.getInt("rotation") : 0;
+        int gotoPaper = options.hasKey("gotoPaper") ? options.getInt("gotoPaper") : 1;
+        int width = options.hasKey("width") ? options.getInt("width") : 480;
+        int height = options.hasKey("height") ? options.getInt("height") : 240;
+        int qrSideLength = options.hasKey("qrSideLength") ? options.getInt("qrSideLength") : 150;
+        double x1 = options.hasKey("x1") ? options.getDouble("x1") : 0;
+        double x2 = options.hasKey("x2") ? options.getDouble("x2") : 0;
+        double x3 = options.hasKey("x3") ? options.getDouble("x3") : 0;
+        double qrX = options.hasKey("qrX") ? options.getDouble("qrX") : 0;
+        double y1 = options.hasKey("y1") ? options.getDouble("y1") : 0;
+        double y2 = options.hasKey("y2") ? options.getDouble("y2") : 0;
+        double y3 = options.hasKey("y3") ? options.getDouble("y3") : 0;
+        double y4 = options.hasKey("y4") ? options.getDouble("y4") : 0;
+        double qrY = options.hasKey("qrY") ? options.getDouble("qrY") : 0;
+        String name = options.hasKey("name") ? options.getString("name") : "";
+        String code = options.hasKey("code") ? options.getString("code") : "";
+        String spec = options.hasKey("spec") ? options.getString("spec") : "";
+        String material = options.hasKey("material") ? options.getString("material") : "";
+        String principal = options.hasKey("principal") ? options.getString("principal") : "";
+        String supplier = options.hasKey("supplier") ? options.getString("supplier") : "";
+        String description = options.hasKey("description") ? options.getString("description") : "";
+
+        mBluetoothService.createThenPrint(qrContent, textSize, rotation, gotoPaper, width, height, qrSideLength,
+                x1, x2, x3, qrX, y1, y2, y3, y4, qrY, name, code, spec, material, principal, supplier, description);
         promise.resolve(true);
     }
 
