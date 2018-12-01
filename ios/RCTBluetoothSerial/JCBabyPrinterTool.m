@@ -22,9 +22,6 @@
 
 @implementation JCBabyPrinterTool
 
-static Byte receiveBuffer[1024];
-static int receiveLength=0;
-
 - (bool)writeData:(NSData*)data
 {
     int sended=0;
@@ -40,92 +37,9 @@ static int receiveLength=0;
     return true;
 }
 
-- (bool)readBytes:(BytePtr)data len:(int)len timeout:(int)timeout
-{
-    for(int i=0;i<timeout/10;i++)
-    {
-        if(receiveLength>=len)break;
-        [self waitUI:10];
-    }
-    if(receiveLength<len)return false;
-    for(int i=0;i<len;i++)
-    {
-        data[i]=receiveBuffer[i];
-    }
-    for(int i=len;i<receiveLength;i++)
-    {
-        receiveBuffer[i-len]=receiveBuffer[i];
-    }
-    receiveLength-=len;
-    return true;
-    
-    
-}
-
 /*
  * 绘制打印页面
  */
-
--(bool)startJob:(int)goto_gap
-{
-    NSData *data = [self getData];
-    [self writeData:data];
-    
-    if (goto_gap==1)
-    {
-        Byte a[2] ;
-        a[0]=0x1d;a[1]=0x0c;
-        NSData *adata = [[NSData alloc] initWithBytes:a length:2];
-        [self writeData:adata];
-    }
-    if (goto_gap==2) {//zuo heibiao
-        Byte a[]={0x0c};
-        NSData *adata = [[NSData alloc] initWithBytes:a length:1];
-        [self writeData:adata];
-    }
-    if (goto_gap==3) {//you heibiao
-        Byte a[]={0x0e};
-        NSData *adata = [[NSData alloc] initWithBytes:a length:1];
-        [self writeData:adata];
-    }
-    if (goto_gap==0) {//
-        
-    }
-    return true;
-}
-
-
--(bool)startPage:(float) width height:(float)height orientation :(int)orientation
-{
-    int nheiht=height;
-    self._h=nheiht;
-    self._orientation=orientation;
-    
-    NSString *begin = [NSString stringWithFormat:@"! 0 200 200 %d 1\r\n",nheiht];
-    [self addC:begin];
-    return true;
-    
-}
-
--(bool)endPage
-{
-    [  self addC:@"PRINT\r\n"];
-    return true;
-}
-
-+ (UIImage *)imageWithColor:(UIColor *)color w:(int)w h:(int)h{
-    CGRect rect = CGRectMake(0.0f, 0.0f, w, h); //宽高 1.0只要有值就够了
-    UIGraphicsBeginImageContext(rect.size); //在这个范围内开启一段上下文
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    
-    CGContextSetFillColorWithColor(context, [color CGColor]);//在这段上下文中获取到颜色UIColor
-    CGContextFillRect(context, rect);//用这个颜色填充这个上下文
-    
-    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();//从这段上下文中获取Image属性,,,结束
-    UIGraphicsEndImageContext();
-    
-    return image;
-}
 
 + (UIImage *)image:(UIImage *)image rotation:(UIImageOrientation)orientation
 {
@@ -184,53 +98,15 @@ static int receiveLength=0;
     
     return newPic;
 }
--(UIImage *)reSizeImage:(UIImage *)image h:(int)h w:(int)w
-{
-    UIGraphicsBeginImageContext(CGSizeMake(w, h));
-    [image drawInRect:CGRectMake(0, 0, w,h)];
-    UIImage *reSizeImage = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    
-    return reSizeImage;
-    
-}
 
--(UIImage *) createPrintImg:(NSString*) qrContent textSize:(float) textSize rotation:(int) rotation gotoPaper:(int) gotoPaper
-                     width:(int) width height:(int) height qrSideLength:(int) qrSideLength,
-                     x1:(float) x1 x2:(float) x2 x3:(float) x3, qrX:(float) qrX,
-                     y1:(float) y1 y2:(float) y2 y3:(float) y3, y4:(float) y4 qrY:(float) qrY,
-                     name:(NSString*) name code:(NSString*) code spec:(NSString*) spec, material:(NSString) material,
-                     principal:(NSString*) principal supplier:(NSString*) supplier description:(NSString*) description
+-(bool) drawBitmap:(UIImage*) image rotations:(int)rotations gotopaper:(int )gotopaper
 {
-
-}
-
--(bool) drawBitmap:(UIImage*) image x:(float) x y:(float)  y widths:(float) widths heihts:( float) heights rotations:(int)rotations gotopaper:(int )gotopaper
-{
-    int xx=x;
-    int yy=y;
-    int width_=widths;
-    int height_=heights;
     
-    UIImage *image1 = [JCBabyPrinterTool imageWithColor:UIColor.whiteColor w:width_+xx h:height_+yy];
-    image=[self reSizeImage:image h:height_ w:width_];
     UIImage *rotationimage=image;
     
     if(rotations==0)   rotationimage=[JCBabyPrinterTool image:rotationimage rotation:UIImageOrientationUpMirrored];
     if(rotations==90){
         rotationimage= [JCBabyPrinterTool image:rotationimage rotation:UIImageOrientationLeft];
-        float imagewidth = rotationimage.size.width;
-        float imageHeight = rotationimage.size.height;
-        if(rotationimage.size.width > rotationimage.size.height)
-        {
-            imagewidth = rotationimage.size.height;
-            imageHeight = imagewidth * (rotationimage.size.height/rotationimage.size.width);
-        }
-        else if(rotationimage.size.width < rotationimage.size.height){
-            imageHeight = rotationimage.size.width;
-            imagewidth = imageHeight * (rotationimage.size.width/rotationimage.size.height);
-        }
-        rotationimage= [self reSizeImage:rotationimage h:imageHeight w:imagewidth];
     }
     if(rotations==180) rotationimage= [JCBabyPrinterTool image:rotationimage rotation:UIImageOrientationDown];
     if(rotations==270)
@@ -239,30 +115,17 @@ static int receiveLength=0;
         UIImage *image3=[JCBabyPrinterTool image:image2 rotation:UIImageOrientationDown];
         // UIImage *image4=[Bluetooth image:image3 rotation:UIImageOrientationLeft];
         rotationimage=image3;
-        float imagewidth = rotationimage.size.width;
-        float imageHeight = rotationimage.size.height;
-        if(rotationimage.size.width > rotationimage.size.height)
-        {
-            imagewidth = rotationimage.size.height;
-            imageHeight = imagewidth * (rotationimage.size.height/rotationimage.size.width);
-        }
-        else if(rotationimage.size.width < rotationimage.size.height){
-            imageHeight = rotationimage.size.width;
-            imagewidth = imageHeight * (rotationimage.size.width/rotationimage.size.height);
-        }
-        rotationimage= [self reSizeImage:rotationimage h:imageHeight w:imagewidth];
     }
-    
     
     CGSize size = CGSizeMake(width_+xx, height_+yy);
     UIGraphicsBeginImageContext(size);
-    [image1 drawInRect:CGRectMake(0, 0, image.size.width+xx,image.size.height+yy)];
     [rotationimage drawInRect:CGRectMake(xx, yy, rotationimage.size.width, rotationimage.size.height)];
     rotationimage = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
 
     size_t width = CGImageGetWidth(rotationimage.CGImage);
     size_t height = CGImageGetHeight(rotationimage.CGImage);
+
     
     size_t bytesPerRow = (width - 1) / 8 + 1;
     uint8_t imageBytes[bytesPerRow * height];
@@ -549,58 +412,6 @@ static int receiveLength=0;
     }
 }
 
--(void) print_status_detect
-{
-    Byte byte[2] = {0x1d,0x99};
-    NSData *adata = [[NSData alloc] initWithBytes:byte length:2];
-    [self writeData:adata];
-}
-
--(int)print_status_get:(int)timeout
-{
-    Byte readdate[4];
-    int a=0;
-    
-    if(![self readBytes:readdate len:4 timeout:timeout])
-    {
-        return -1;
-    }
-    if (readdate[0]!=0x1d) {
-        return -1;
-    }
-    if (readdate[1]!=0x99) {
-        return -1;
-    }
-    if(readdate[3]!=0xff)
-    {
-        return -1;
-    }
-    
-    if ((readdate[2] & 0x1)!=0) {
-        a=1;
-    }
-    if ((readdate[2]& 0x02)!=0) {
-        a=2;
-    }
-    return a;
-}
-
-
-@synthesize dataLength;
--(id)init{
-    self = [super init];
-    _offset = 0;
-    return self;
-}
-
--(void)reset{
-    _offset = 0;
-}
-
--(int) getDataLength{
-    return _offset;
-}
-
 -(BOOL) addData:(Byte *)data length:(int)length{
     if (_offset + length > MAX_DATA_SIZE)
         return FALSE;
@@ -609,43 +420,9 @@ static int receiveLength=0;
     return TRUE;
 }
 
--(BOOL) addByte:(Byte)byte{
-    if (_offset + 1 > MAX_DATA_SIZE)
-        return FALSE;
-    _buffer[_offset++] = byte;
-    return TRUE;
-}
-
--(BOOL) addShort:(ushort)data{
-    if (_offset + 2 > MAX_DATA_SIZE)
-        return FALSE;
-    _buffer[_offset++] = (Byte)data;
-    _buffer[_offset++] = (Byte)(data>>8);
-    return TRUE;
-}
-
--(BOOL) add:(NSString *)text{
-    NSStringEncoding enc = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
-    NSData* gbk = [text dataUsingEncoding:enc];
-    Byte* gbkBytes = (Byte*)[gbk bytes]  ;
-    if(![self addData:gbkBytes length:gbk.length])
-        return FALSE;
-    return [self addByte:0x00];
-}
-
--(BOOL) addC:(NSString *)text{
-    NSStringEncoding enc = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingGB_18030_2000);
-    NSData* gbk = [text dataUsingEncoding:enc];
-    Byte* gbkBytes = (Byte*)[gbk bytes]  ;
-    if(![self addData:gbkBytes length:gbk.length])
-        return FALSE;
-    return true;
-}
-
 -(NSData*) getData{
     NSData *data;
     data = [[NSData alloc]initWithBytes:_buffer length:[self getDataLength]];
-    //_offset -= [self getDataLength];
     return data;
 }
 
