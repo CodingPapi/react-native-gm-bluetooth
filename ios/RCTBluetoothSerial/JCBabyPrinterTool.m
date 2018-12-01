@@ -15,7 +15,6 @@
 @property (strong, nonatomic) BLOCK_CALLBACK_SCAN_FIND scanFindCallback;
 @property (strong, nonatomic) CBCentralManager *centralManager;
 @property (strong, nonatomic) NSMutableArray* nServices;
-//@property (strong, nonatomic) NSMutableArray * array1;
 @property int _h;
 
 @property int _orientation;
@@ -39,11 +38,6 @@ static int receiveLength=0;
         NSLog(@"发送...");
     }
     return true;
-}
-
-- (void)flushRead
-{
-    receiveLength=0;
 }
 
 - (bool)readBytes:(BytePtr)data len:(int)len timeout:(int)timeout
@@ -116,250 +110,6 @@ static int receiveLength=0;
 -(bool)endPage
 {
     [  self addC:@"PRINT\r\n"];
-    return true;
-}
-
-
--(bool) drawText:(NSString *) text xx:(float)xx yy:(float)yy t_width:(float) t_width t_height:(float) t_height textfontHeight:(float) textfontHeight
-{
-    int x=xx;
-    int y=yy;
-    int width=t_width;
-    int height=t_height;
-    int fontHeight=textfontHeight;
-    
-    int rotate=0;
-    // x=x*8;
-    // y=y*8;
-    // width=width*8;
-    // height=height*8;
-    
-    int cx=0;
-    int cy=0;
-    int f_height = 0;
-    // TODO Auto-generated method stub
-    if(fontHeight==16){f_height=16;}
-    if(fontHeight==24){ f_height=24;}
-    if(fontHeight==32)
-    {
-        
-        f_height=32;
-    }
-    if(fontHeight==48)
-    {
-        
-        f_height=48;
-    }
-    
-    if(fontHeight==64)
-    {
-        
-        f_height=64;
-    }
-    if(fontHeight==72)
-    {
-        
-        f_height=72;
-    }
-    if(fontHeight==96)
-    {
-        
-        f_height=96;
-    }
-    
-    //             if(width==0)
-    //             {
-    //                    impl.DrawText(x, y, text, fontHeight, 0, false, false);
-    //                    return true;
-    //             }
-    //             if(height==0)
-    //             {
-    //                    impl.DrawText(x, y, text, fontHeight, 0, false, false);
-    //                    return true;
-    //             }
-    
-    
-    int _x=width/f_height;
-    int _y=height/f_height;
-    int _xx=_x;
-    int ii=0;
-    
-    
-    bool ver=true;
-    int a=text.length;
-    if(_y==1)
-    {
-        if(a>=_x)
-        {
-            
-            //  NSString * s=  text.substring(ii, _x);
-            NSString * s= [text substringWithRange:NSMakeRange(ii,_x)];
-            
-            //  impl.DrawText(x, y, s, fontHeight, 0, false, rotate);
-            
-            [self Text :x y:y text:s  font :fontHeight  textSize:0 bold: false  rotate: rotate];
-        }
-        else
-        {
-            
-            [self Text :cx y:cy text:text font :fontHeight  textSize:0 bold: false  rotate: rotate];
-            
-        }
-        
-        
-        
-        //            DrawText(text_x,text_y,str,fontsize,rotate,bold,reverse,underline);
-        
-    }
-    else
-    {
-        int b=text.length;
-        
-        
-        
-        if(_x==1)
-        {
-            
-            for(int i=0;i<b;i++)//////////
-            {
-                if(_x*_y>b)
-                {
-                    NSString * s= [text substringWithRange:NSMakeRange(ii,_x)];
-                    //      impl.DrawText(x, y+(f_height*(i+1)), s, fontHeight, 0, false, rotate);
-                    [self Text :x y:y+(f_height*(i+1)) text:s  font :fontHeight  textSize:0 bold: false  rotate: rotate];
-                    
-                    //  ii++;
-                    //  _x++;
-                }
-                else
-                {
-                    // String s=text.substring(ii, _x);
-                    NSString * s= [text substringWithRange:NSMakeRange(ii,_x)];
-                    // impl.DrawText(x, y+(f_height*(i+1))-(height-(b/_x*f_height))/2, s, fontHeight, 0, false, rotate);
-                    [self Text :x y:y+(f_height*(i+1))-(height-(b/_x*f_height))/2 text:s  font :fontHeight  textSize:0 bold: false  rotate: rotate];
-                    
-                    //  ii++;
-                    //   _x++;
-                }
-            }
-        }
-        else
-            
-        {
-            int t;
-            int tt=0;
-            if((_x-a)>=0&&ver==true)
-            {
-                
-                [self Text :cx y:cy text:text  font :fontHeight  textSize:0 bold: false  rotate: rotate];
-                ver=false;
-                return true;
-            }
-            if(_x-a<0)
-            {
-                int line=b/_x;
-                for( t=0;t<_y;t++)
-                {
-                    
-                    ver=false;
-                    //   String s=text.substring(ii, _x);
-                    NSString * s= [text substringWithRange:NSMakeRange(ii,_x)];
-                    
-                    //impl.DrawText(x, y+(f_height*(tt++)), s, fontHeight, 0, false, rotate);
-                    [self Text :x y:y+(f_height*(tt++)) text:s  font :fontHeight  textSize:0 bold: false  rotate: rotate];
-                    ii=ii+3;
-                    a=a-_xx;
-                    // _x=_x+_xx;
-                    
-                    if((_xx-a)>=0)
-                    {
-                        //s=text.substring(ii, text.length());
-                        s=[text substringWithRange:NSMakeRange(ii,a)];
-                        //    DrawText(text_x,text_y+(f_height*(tt++)),s,fontsize,rotate,bold,reverse,underline);
-                        //impl.DrawText(x, y+(f_height*(tt++)), s, fontHeight, 0, false, rotate);
-                        [self Text :x y:y+(f_height*(tt++)) text:s  font :fontHeight  textSize:0 bold: false  rotate: rotate];
-                        
-                        return true;
-                    }
-                    
-                }
-            }
-            
-        }
-    }
-    return true;
-    
-}
-
--(bool) drawTextRegular:(NSString *) text x:(float) x y:(float) y width:(float) width heiht: (float) height  fontHeight:(float) fontHeight fontStyle:(int) fontStyle
-{
-    return true;
-}
-
-
--(bool) drawBarcode:(NSString *)text type:(int)type x:(float)x y:( float)y width:(float)width height:(float)height fontHeight:(float)fontHeight
-{
-    int xx=x;
-    int yy=y;
-    int width_=width;
-    int height_=height;
-    
-    
-    NSString * t=@"128";
-    if(type==20)t=@"UPC-A";
-    if(type==21)t=@"UPC-E";
-    if(type==22)t=@"EAN13";
-    if(type==23)t=@"EAN8";
-    if(type==24)t=@"39";
-    if(type==25)t=@"I2OF5";
-    if(type==26)t=@"CODABAR";
-    if(type==27)t=@"93";
-    if(type==28)t=@"128";
-    //if(type==29)t="UPC-A";
-    //if(type==30)t="UPC-A";
-    if(type==60)t=@"128";
-    
-    NSString * cmd = @"BARCODE";
-    // if(rotate)cmd="VBARCODE";
-    NSString * str = [NSString stringWithFormat:@"%@ %@ %d 1 %d %d %d %@\r\n",cmd,t, width_,height_,xx,yy,text];
-    [self addC:str];
-    return true;
-}
-
--(bool) drawQrCode:(NSString *)text x:(float) x y:( float) y width:( int) width
-{
-    int xx=x;
-    int yy=y;
-    NSString *cmd =@"BARCODE";
-    // if(rotate)cmd=@"VBARCODE";
-    NSString *str = [NSString stringWithFormat:@"%@ QR %d %d M %d U %d\r\n",cmd,xx,yy,2,width];
-    [self addC:str];
-    [self addC:@"MA,"];
-    [self addC:text];
-    [self addC:@"\r\nENDQR\r\n"];
-    return true;
-}
-
--(bool) drawLine:(float)x1 y1:(float)y1 x2:(float)x2 y2:(float)y2  lineWidth:(int)lineWidth
-{
-    int xx1=x1;
-    int yy1=y1;
-    int xx2=x2;
-    int yy2=y2;
-    
-    NSString *str = [NSString stringWithFormat:@"LINE %d %d %d %d %d\r\n", xx1,yy1,xx2,yy2,lineWidth];
-    [self addC:str];
-    return true;
-}
--(bool) drawRectangle:(float) x y:(float) y width:( float) width heiht:( float) height  lineWidth:(int)lineWidth
-{
-    int xx=x;
-    int yy=y;
-    int width_=width;
-    int height_=height;
-    
-    NSString *str = [NSString stringWithFormat:@"BOX %d %d %d %d %d\r\n", xx,yy,xx+width_,yy+height_,lineWidth];
-    [self addC:str];
     return true;
 }
 
@@ -445,6 +195,16 @@ static int receiveLength=0;
     
 }
 
+-(UIImage *) createPrintImg:(NSString*) qrContent textSize:(float) textSize rotation:(int) rotation gotoPaper:(int) gotoPaper
+                     width:(int) width height:(int) height qrSideLength:(int) qrSideLength,
+                     x1:(float) x1 x2:(float) x2 x3:(float) x3, qrX:(float) qrX,
+                     y1:(float) y1 y2:(float) y2 y3:(float) y3, y4:(float) y4 qrY:(float) qrY,
+                     name:(NSString*) name code:(NSString*) code spec:(NSString*) spec, material:(NSString) material,
+                     principal:(NSString*) principal supplier:(NSString*) supplier description:(NSString*) description
+{
+
+}
+
 -(bool) drawBitmap:(UIImage*) image x:(float) x y:(float)  y widths:(float) widths heihts:( float) heights rotations:(int)rotations gotopaper:(int )gotopaper
 {
     int xx=x;
@@ -501,12 +261,6 @@ static int receiveLength=0;
     rotationimage = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
 
-
-    
-    
-    
-    
-    
     size_t width = CGImageGetWidth(rotationimage.CGImage);
     size_t height = CGImageGetHeight(rotationimage.CGImage);
     
@@ -516,8 +270,6 @@ static int receiveLength=0;
     
     NSString *begin;
     NSData *pngdata;
-    
-    
     
     [self addData:imageBytes length:bytesPerRow * height];
     pngdata= [self getData];
@@ -578,202 +330,94 @@ static int receiveLength=0;
 }
 //压缩
 +(NSData*) gzipData: (NSData*)pUncompressedData
-
 {
-    
-    
-    
     if (!pUncompressedData || [pUncompressedData length] == 0)
-        
     {
-        
         NSLog(@"%s: Error: Can't compress an empty or null NSData object.", __func__);
-        
         return nil;
-        
     }
-    
-    
-    
     int deflateStatus;
-    
     float buffer = 1.1;
-    
     do {
-        
         z_stream zlibStreamStruct;
-        
         zlibStreamStruct.zalloc    = Z_NULL; // Set zalloc, zfree, and opaque to Z_NULL so
-        
         zlibStreamStruct.zfree     = Z_NULL; // that when we call deflateInit2 they will be
-        
         zlibStreamStruct.opaque    = Z_NULL; // updated to use default allocation functions.
-        
         zlibStreamStruct.total_out = 0; // Total number of output bytes produced so far
-        
         zlibStreamStruct.next_in   = (Bytef*)[pUncompressedData bytes]; // Pointer to input bytes
-        
         zlibStreamStruct.avail_in  = (uInt)[pUncompressedData length]; // Number of input bytes left to process
-        
-        
-        
-        
-        
         int initError = deflateInit2(&zlibStreamStruct, Z_DEFAULT_COMPRESSION, Z_DEFLATED, (15+16), 8, Z_DEFAULT_STRATEGY);
-        
         if (initError != Z_OK)
-            
         {
-            
             NSString *errorMsg = nil;
-            
             switch (initError)
-            
             {
-                    
                 case Z_STREAM_ERROR:
-                    
                     errorMsg = @"Invalid parameter passed in to function.";
-                    
                     break;
-                    
                 case Z_MEM_ERROR:
-                    
                     errorMsg = @"Insufficient memory.";
-                    
                     break;
-                    
                 case Z_VERSION_ERROR:
-                    
                     errorMsg = @"The version of zlib.h and the version of the library linked do not match.";
-                    
                     break;
-                    
                 default:
-                    
                     errorMsg = @"Unknown error code.";
-                    
                     break;
-                    
             }
-            
             NSLog(@"%s: deflateInit2() Error: \"%@\" Message: \"%s\"", __func__, errorMsg, zlibStreamStruct.msg);
-            
             return nil;
-            
         }
-        
-        
         
         // Create output memory buffer for compressed data. The zlib documentation states that
-        
         // destination buffer size must be at least 0.1% larger than avail_in plus 12 bytes.
-        
         NSMutableData *compressedData = [NSMutableData dataWithLength:[pUncompressedData length] * buffer + 12];
-        
-        
-        
         do {
-            
             // Store location where next byte should be put in next_out
-            
             zlibStreamStruct.next_out = [compressedData mutableBytes] + zlibStreamStruct.total_out;
-            
-            
-            
             // Calculate the amount of remaining free space in the output buffer
-            
             // by subtracting the number of bytes that have been written so far
-            
             // from the buffer's total capacity
-            
             zlibStreamStruct.avail_out = (uInt)([compressedData length] - zlibStreamStruct.total_out);
-            
-            
-            
             deflateStatus = deflate(&zlibStreamStruct, Z_FINISH);
-            
-            
-            
         } while ( deflateStatus == Z_OK );
-        
-        
-        
         if (deflateStatus == Z_BUF_ERROR && buffer < 32) {
-            
             continue;
-            
         }
-        
-        
-        
         // Check for zlib error and convert code to usable error message if appropriate
-        
         if (deflateStatus != Z_STREAM_END) {
-            
             NSString *errorMsg = nil;
-            
             switch (deflateStatus)
-            
             {
-                    
                 case Z_ERRNO:
-                    
                     errorMsg = @"Error occured while reading file.";
-                    
                     break;
-                    
                 case Z_STREAM_ERROR:
-                    
                     errorMsg = @"The stream state was inconsistent (e.g., next_in or next_out was NULL).";
-                    
                     break;
-                    
                 case Z_DATA_ERROR:
-                    
                     errorMsg = @"The deflate data was invalid or incomplete.";
-                    
                     break;
-                    
                 case Z_MEM_ERROR:
-                    
                     errorMsg = @"Memory could not be allocated for processing.";
-                    
                     break;
-                    
                 case Z_BUF_ERROR:
-                    
                     errorMsg = @"Ran out of output buffer for writing compressed bytes.";
-                    
                     break;
-                    
                 case Z_VERSION_ERROR:
-                    
                     errorMsg = @"The version of zlib.h and the version of the library linked do not match.";
-                    
                     break;
-                    
                 default:
-                    
                     errorMsg = @"Unknown error code.";
-                    
                     break;
-                    
             }
-            
             NSLog(@"%s: zlib error while attempting compression: \"%@\" Message: \"%s\"", __func__, errorMsg, zlibStreamStruct.msg);
-            
             // Free data structures that were dynamically created for the stream.
-            
             deflateEnd(&zlibStreamStruct);
             return nil;
-            
         }
         
-        
-        
         // Free data structures that were dynamically created for the stream.
-        
         deflateEnd(&zlibStreamStruct);
         [compressedData setLength: zlibStreamStruct.total_out];
         int countsize=compressedData.length;
@@ -785,7 +429,6 @@ static int receiveLength=0;
         [compressedData replaceBytesInRange:NSMakeRange(5, 1) withBytes:bb length:1];
         [compressedData replaceBytesInRange:NSMakeRange(6, 1) withBytes:cc length:1];
         [compressedData replaceBytesInRange:NSMakeRange(7, 1) withBytes:dd length:1];
-        
         
         uLong crc = crc32(0L, Z_NULL, 0);
         crc = crc32(crc, compressedData.bytes+8,compressedData.length-12);
@@ -800,20 +443,14 @@ static int receiveLength=0;
         [compressedData replaceBytesInRange:NSMakeRange(countsize-2, 1) withBytes:c length:1];
         [compressedData replaceBytesInRange:NSMakeRange(countsize-1, 1) withBytes:d length:1];
         return compressedData;
-        
     } while ( false );
-    
     return nil;
-    
 }
-
-
 
 - (void)cnc_getBinaryzationBytes:(char *)data reverse:(BOOL)reverse img:(CGImageRef) img
 {
     [self cnc_getBinaryzationBytes:data threshold:128 reverse:reverse img:img];
 }
-
 
 - (void)cnc_getBinaryzationBytes:(char *)data threshold:(int)threshold reverse:(BOOL)reverse img:(CGImageRef) img
 {
@@ -862,21 +499,6 @@ static int receiveLength=0;
         }
     }
     
-    /* int y0=0;
-     while(y0<height)
-     {
-     int hh=height-y0;
-     for (int yy = y0; yy < y0+hh; yy++) {
-     for (int xx = 0; xx < width; xx++) {
-     uint8_t *rgbaPixel = (uint8_t *)&pixels[yy * width + xx];
-     uint8_t gray = 0.299 * rgbaPixel[2] + 0.587 * rgbaPixel[1] + 0.114 * rgbaPixel[0];
-     data[(yy-y0) * width + xx] = gray < threshold ? (uint8_t)reverse : (uint8_t)!reverse;
-     }
-     }
-     
-     
-     }*/
-    
     CGColorSpaceRelease(colorSpace);
     CGContextRelease(context);
     
@@ -884,7 +506,6 @@ static int receiveLength=0;
         free(pixels);
     }
 }
-
 
 - (void)cnc_getCompressedBinaryzationBytes:(char *)data  reverse:(BOOL)reverse img:(CGImageRef) img
 {
@@ -906,16 +527,8 @@ static int receiveLength=0;
     [self cnc_getBinaryzationBytes:imageBytes threshold:threshold reverse:reverse img:img];
     size_t byteWidth = (width - 1) / 8 + 1;
     Byte s[(4+byteWidth)*height];
-    
-    
-    
-    
-    
     for (int i = 0; i < height; i++) {
-        
-        
         for (int j = 0; j < byteWidth; j++) {
-            
             uint8_t unit = 0;
             for (int k = 0; k < 8; k++) {
                 if (((j << 3) + k) < width) {
@@ -930,17 +543,11 @@ static int receiveLength=0;
             
             data[i * byteWidth + j] = unit;
         }
-        
-        
-        
     }
-    
     if (imageBytes) {
         free(imageBytes);
     }
 }
-
-
 
 -(void) print_status_detect
 {
@@ -979,31 +586,15 @@ static int receiveLength=0;
 }
 
 
--(int) mmToPixel:(int) mm
-{
-    return mm;
-}
-
--(int) pixelToMm:(int) pixel
-{
-    
-    return pixel ;
-}
-
-
-
-
 @synthesize dataLength;
 -(id)init{
     self = [super init];
     _offset = 0;
-    _sendedDataLength = 0;
     return self;
 }
 
 -(void)reset{
     _offset = 0;
-    _sendedDataLength = 0;
 }
 
 -(int) getDataLength{
@@ -1052,89 +643,10 @@ static int receiveLength=0;
 }
 
 -(NSData*) getData{
-    
-    
     NSData *data;
-    data = [[NSData alloc]initWithBytes:_buffer+_sendedDataLength length:[self getDataLength]];
+    data = [[NSData alloc]initWithBytes:_buffer length:[self getDataLength]];
     //_offset -= [self getDataLength];
-    //_sendedDataLength +=[self getDataLength];
     return data;
-}
--(void) Text: (int) x y:(int) y text:(NSString *) text font :(int) font  textSize:(int) textSize bold:(bool) bold  rotate:(int) rotate
-{
-    int f_size=24;
-    int f_height=24;
-    
-    
-    NSString *textScale=@"";
-    if(font==16){f_size=55;f_height=16;}
-    if(font==24){ f_size=24;f_height=24;}
-    if(font==32)
-    {
-        //f_size=55;// textScale = String.format("SETMAG %d %d\r\n", 2,2);
-        //add(textScale.getBytes());
-        f_size=56;
-        f_height=32;
-    }
-    if(font==48)
-    {
-        f_size=24; textScale =[NSString stringWithFormat:@"SETMAG %d %d\r\n", 2,2];
-        [self addC:textScale];
-        f_height=48;
-    }
-    
-    if(font==64)
-    {
-        f_size=56; textScale =[NSString stringWithFormat:@"SETMAG %d %d\r\n", 2,2];
-        [self addC:textScale];
-        f_height=64;
-    }
-    if(font==72)
-    {
-        f_size=24;  textScale =[NSString stringWithFormat:@"SETMAG %d %d\r\n", 3,3];
-        [self addC:textScale];
-        f_height=72;
-    }
-    if(font==96)
-    {
-        f_size=56;  textScale =[NSString stringWithFormat:@"SETMAG %d %d\r\n", 3,3];
-        [self addC:textScale];
-        f_height=96;
-    }
-    
-    /*if(bold==1)
-     {
-     add("SETBOLD 1\r\n".getBytes());
-     }
-     else
-     {
-     add("SETBOLD 0\r\n".getBytes());
-     }
-     */
-    NSString * cmd = @"T";
-    if(rotate==90)cmd=@"VT";
-    if(rotate==180)cmd=@"T180";
-    if(rotate==270)cmd=@"T270";
-    
-    NSString * str =[NSString stringWithFormat:@"%@ %d %d %d %d %@\r\n",cmd,f_size,0,x,y,text];
-    [self addC:str];
-    [self addC:@"SETMAG 0 0 \r\n"];
-    
-}
-#pragma mark - 帮助方法
-
-- (NSString *)hexStringFromBytes:(const uint8_t *)bytes length:(size_t)length
-{
-    if (!bytes) {
-        return @"";
-    }
-    
-    NSMutableString *hex = [NSMutableString string];
-    for (size_t i = 0; i < length; i++) {
-        [hex appendFormat:@"%02X", bytes[i]];
-    }
-    
-    return hex;
 }
 
 @end
