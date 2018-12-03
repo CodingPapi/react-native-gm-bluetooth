@@ -17,6 +17,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.zip.CRC32;
 import java.util.zip.GZIPOutputStream;
+import android.graphics.Bitmap;
+import android.graphics.Matrix;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Canvas;
 
 import static com.gm.RCTGMBluetooth.RCTGMBluetoothPackage.TAG;
 
@@ -183,7 +188,7 @@ class RCTGMBluetoothService {
 
     }
 
-    private performPrint(Bitmap bitmap, int gotoPaper) {
+    private void performPrint(Bitmap bitmap, int gotoPaper) {
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
 

@@ -442,25 +442,25 @@ public class RCTGMBluetoothModule extends ReactContextBaseJavaModule implements 
     /**
      * Print by B3 bluetooth printer
      */
-    public void b3Print(ReadableMap info, Promise promise) {
-        if (D) Log.d(TAG, "b3Print " + info.toString());
+    public void b3Print(ReadableMap options, Promise promise) {
+        if (D) Log.d(TAG, "b3Print " + options.toString());
 
         String qrContent = options.hasKey("qrContent") ? options.getString("qrContent") : "";
-        double textSize = options.hasKey("textSize") ? options.getDouble("textSize") : 16D;
+        float textSize = options.hasKey("textSize") ? (float) options.getDouble("textSize") : 16;
         int rotation = options.hasKey("rotation") ? options.getInt("rotation") : 0;
         int gotoPaper = options.hasKey("gotoPaper") ? options.getInt("gotoPaper") : 1;
         int width = options.hasKey("width") ? options.getInt("width") : 480;
         int height = options.hasKey("height") ? options.getInt("height") : 240;
         int qrSideLength = options.hasKey("qrSideLength") ? options.getInt("qrSideLength") : 150;
-        double x1 = options.hasKey("x1") ? options.getDouble("x1") : 0;
-        double x2 = options.hasKey("x2") ? options.getDouble("x2") : 0;
-        double x3 = options.hasKey("x3") ? options.getDouble("x3") : 0;
-        double qrX = options.hasKey("qrX") ? options.getDouble("qrX") : 0;
-        double y1 = options.hasKey("y1") ? options.getDouble("y1") : 0;
-        double y2 = options.hasKey("y2") ? options.getDouble("y2") : 0;
-        double y3 = options.hasKey("y3") ? options.getDouble("y3") : 0;
-        double y4 = options.hasKey("y4") ? options.getDouble("y4") : 0;
-        double qrY = options.hasKey("qrY") ? options.getDouble("qrY") : 0;
+        float x1 = options.hasKey("x1") ? (float) options.getDouble("x1") : 0;
+        float x2 = options.hasKey("x2") ? (float) options.getDouble("x2") : 0;
+        float x3 = options.hasKey("x3") ? (float) options.getDouble("x3") : 0;
+        float qrX = options.hasKey("qrX") ? (float) options.getDouble("qrX") : 0;
+        float y1 = options.hasKey("y1") ? (float) options.getDouble("y1") : 0;
+        float y2 = options.hasKey("y2") ? (float) options.getDouble("y2") : 0;
+        float y3 = options.hasKey("y3") ? (float) options.getDouble("y3") : 0;
+        float y4 = options.hasKey("y4") ? (float) options.getDouble("y4") : 0;
+        float qrY = options.hasKey("qrY") ? (float) options.getDouble("qrY") : 0;
         String name = options.hasKey("name") ? options.getString("name") : "";
         String code = options.hasKey("code") ? options.getString("code") : "";
         String spec = options.hasKey("spec") ? options.getString("spec") : "";
@@ -469,7 +469,7 @@ public class RCTGMBluetoothModule extends ReactContextBaseJavaModule implements 
         String supplier = options.hasKey("supplier") ? options.getString("supplier") : "";
         String description = options.hasKey("description") ? options.getString("description") : "";
 
-        mBluetoothService.createThenPrint(qrContent, textSize, rotation, gotoPaper, width, height, qrSideLength,
+        mBluetoothService.createThenPrint(qrContent, (float) textSize, rotation, gotoPaper, width, height, qrSideLength,
                 x1, x2, x3, qrX, y1, y2, y3, y4, qrY, name, code, spec, material, principal, supplier, description);
         promise.resolve(true);
     }
