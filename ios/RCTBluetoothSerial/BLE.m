@@ -659,9 +659,9 @@ static bool done = false;
 
 // B3 Printer method
 
-- (void)createAndPrintImg:(NSString *)qrContent textSize:(float) textSize tdSizeSmall:(float) tdSizeSmall tdSizeMiddle:(float) tdSizeMiddle rotation:(int) rotation gotoPaper:(int) gotoPaper
+- (void)createAndPrintImg:(NSString *)qrContent textSize:(float) textSize tdSizeSmall:(float) tdSizeSmall tdSizeMiddle:(float) tdSizeMiddle adjustTextHeight:(float) adjustTextHeight rotation:(int) rotation gotoPaper:(int) gotoPaper
                       width:(int) width height:(int) height qrSideLength:(int) qrSideLength x1:(float) x1 x2:(float) x2 x3:(float) x3 qrX:(float) qrX
-                         y1:(float) y1 y2:(float) y2 y3:(float) y3 y4:(float) y4 tdY4Small:(float) tdY4Small tdY4Middle:(float) tdY4Middle qrY:(float) qrY name:(NSString *) name code: (NSString *) code spec:(NSString *) spec
+                         y1:(float) y1 y2:(float) y2 y3:(float) y3 y4:(float) y4 qrY:(float) qrY name:(NSString *) name code: (NSString *) code spec:(NSString *) spec
                    material:(NSString *) material principal:(NSString *) principal supplier:(NSString *) supplier description:(NSString *) description {
     
     // make label image

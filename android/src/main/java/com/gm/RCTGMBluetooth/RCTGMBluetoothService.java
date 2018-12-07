@@ -131,10 +131,39 @@ class RCTGMBluetoothService {
     /** B3 Printer methods **/
     /*********************/
 
-    void createThenPrint(String qrContent, float textSize, float tdSizeSmall, float tdSizeMiddle, int rotation, int gotoPaper,
+    void drawMuitiLineText(Canvas canvas, Paint paint, String text, float sizeLarge, float sizeMiddle, float sizeSmall, float adjustHeight, int containerWidth, float transX, float transY) {
+        // draw multi-line text if necessary
+        float meaLen = paint.measureText(text);
+        float newTextSize = sizeLarge;
+        float newY = transY;
+        if (meaLen > containerWidth) {
+            float temp = meaLen / containerWidth;
+            if (temp > 2) {
+                newTextSize = sizeSmall;
+                newY = transY - sizeLarge - adjustHeight;
+            } else if (temp > 1) {
+                newTextSize = sizeMiddle;
+                newY = transY - sizeLarge - adjustHeight / 2;
+            } else {
+                newTextSize = sizeLarge;
+                newY = transY;
+            }
+            TextPaint tPaint = new TextPaint();
+            tPaint.setTextSize(newTextSize);
+            StaticLayout staticLayout = new StaticLayout(text, tPaint, containerWidth, Layout.Alignment.ALIGN_NORMAL, 1, 0, true);
+            canvas.save();
+            canvas.translate(transX, newY);
+            staticLayout.draw(canvas);
+            canvas.restore();
+        } else {
+            canvas.drawText(text, transX, transY, paint);
+        }
+    }
+
+    void createThenPrint(String qrContent, float textSize, float tdSizeSmall, float tdSizeMiddle, float adjustTextHeight, int rotation, int gotoPaper,
                                  int width, int height, int qrSideLength,
                                  float x1, float x2, float x3, float qrX,
-                                 float y1, float y2, float y3, float y4, float tdY4Small, float tdY4Middle, float qrY,
+                                 float y1, float y2, float y3, float y4, float qrY,
                                  String name, String code, String spec, String material,
                                  String principal, String supplier, String description) {
 
@@ -162,39 +191,23 @@ class RCTGMBluetoothService {
             canvas.drawBitmap(qrCode, qrX, qrY, paint);
         }
 
-        canvas.drawText(name, x1, y1, paint);
-        canvas.drawText(spec, x1, y2, paint);
-        canvas.drawText(principal, x1, y3, paint);
-        canvas.drawText(code, x2, y1, paint);
-        canvas.drawText(material, x2, y2, paint);
-        canvas.drawText(supplier, x2, y3, paint);
+        int w1 = (int) (x2 -x1);
+        int w2 = (int) (width - x2);
+        // canvas.drawText(name, x1, y1, paint);
+        drawMuitiLineText(canvas, paint, name, textSize, tdSizeMiddle, tdSizeSmall, adjustTextHeight, w1, x1, y1);
+        // canvas.drawText(spec, x1, y2, paint);
+        drawMuitiLineText(canvas, paint, spec, textSize, tdSizeMiddle, tdSizeSmall, adjustTextHeight, w1, x1, y2);
+        // canvas.drawText(principal, x1, y3, paint);
+        drawMuitiLineText(canvas, paint, principal, textSize, tdSizeMiddle, tdSizeSmall, adjustTextHeight, w1, x1, y3);
+        // canvas.drawText(code, x2, y1, paint);
+        drawMuitiLineText(canvas, paint, code, textSize, tdSizeMiddle, tdSizeSmall, adjustTextHeight, w2, x2, y1);
+        // canvas.drawText(material, x2, y2, paint);
+        drawMuitiLineText(canvas, paint, material, textSize, tdSizeMiddle, tdSizeSmall, adjustTextHeight, w2, x2, y2);
+        // canvas.drawText(supplier, x2, y3, paint);
+        drawMuitiLineText(canvas, paint, supplier, textSize, tdSizeMiddle, tdSizeSmall, adjustTextHeight, w2, x2, y3);
 
-        // draw multi-line description if necessary
-        float meaLen = paint.measureText(description);
-        float newTextSize = textSize;
-        float newY4 = y4;
-        if (meaLen > width) {
-            float temp = meaLen / width;
-            if (temp > 2) {
-                newTextSize = tdSizeSmall;
-                newY4 = tdY4Small;
-            } else if (temp > 1) {
-                newTextSize = tdSizeMiddle;
-                newY4 = tdY4Middle;
-            } else {
-                newTextSize = textSize;
-                newY4 = y4;
-            }
-            TextPaint tPaint = new TextPaint();
-            tPaint.setTextSize(newTextSize);
-            StaticLayout staticLayout = new StaticLayout(description, tPaint, width, Layout.Alignment.ALIGN_NORMAL, 1, 0, true);
-            canvas.save();
-            canvas.translate(x3, newY4);
-            staticLayout.draw(canvas);
-            canvas.restore();
-        } else {
-            canvas.drawText(description, x3, y4, paint);
-        }
+        // canvas.drawText(description, x3, y4, paint);
+        drawMuitiLineText(canvas, paint, description, textSize, tdSizeMiddle, tdSizeSmall, adjustTextHeight, width, x3, y4);
 
         int labelWidth = 0;
         int labelHeight = 0;
@@ -205,8 +218,6 @@ class RCTGMBluetoothService {
             labelWidth = bitmap.getWidth();
             labelHeight = bitmap.getHeight();
         }
-
-        // labelHeight = labelHeight > 600 ? 600 : labelHeight;
 
         Matrix matrix = new Matrix();
         matrix.postRotate(rotation);

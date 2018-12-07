@@ -174,6 +174,7 @@ RCT_EXPORT_METHOD(b3Print:(NSDictionary *)info
     float textSize = [RCTConvert float:info[@"textSize"]];
     float tdSizeSmall = [RCTConvert float:info[@"tdSizeSmall"]];
     float tdSizeMiddle = [RCTConvert float:info[@"tdSizeMiddle"]];
+    float adjustTextHeight = [RCTConvert float:info[@"adjustTextHeight"]];
     int rotation = [RCTConvert int:info[@"rotation"]];
     int gotoPager = [RCTConvert int:info[@"gotoPager"]];
     int width = [RCTConvert int:info[@"width"]];
@@ -187,8 +188,6 @@ RCT_EXPORT_METHOD(b3Print:(NSDictionary *)info
     float y2 = [RCTConvert float:info[@"y2"]];
     float y3 = [RCTConvert float:info[@"y3"]];
     float y4 = [RCTConvert float:info[@"y4"]];
-    float tdY4Small = [RCTConvert float:info[@"tdY4Small"]];
-    float tdY4Middle = [RCTConvert float:info[@"tdY4Middle"]];
     float qrY = [RCTConvert float:info[@"qrY"]];
     NSString *name = [RCTConvert NSString:info[@"name"]];
     NSString *code = [RCTConvert NSString:info[@"code"]];
