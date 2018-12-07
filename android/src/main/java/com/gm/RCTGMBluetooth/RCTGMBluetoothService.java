@@ -25,6 +25,7 @@ import android.graphics.Matrix;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Canvas;
+import android.graphics.Typeface;
 
 import static com.gm.RCTGMBluetooth.RCTGMBluetoothPackage.TAG;
 
@@ -131,7 +132,7 @@ class RCTGMBluetoothService {
     /** B3 Printer methods **/
     /*********************/
 
-    void drawMuitiLineText(Canvas canvas, Paint paint, String text, float sizeLarge, float sizeMiddle, float sizeSmall, float adjustHeight, int containerWidth, float transX, float transY) {
+    void drawMuitiLineText(Canvas canvas, Paint paint, TextPaint tPaint, String text, float sizeLarge, float sizeMiddle, float sizeSmall, float adjustHeight, int containerWidth, float transX, float transY) {
         // draw multi-line text if necessary
         float meaLen = paint.measureText(text);
         float newTextSize = sizeLarge;
@@ -148,7 +149,6 @@ class RCTGMBluetoothService {
                 newTextSize = sizeLarge;
                 newY = transY;
             }
-            TextPaint tPaint = new TextPaint();
             tPaint.setTextSize(newTextSize);
             StaticLayout staticLayout = new StaticLayout(text, tPaint, containerWidth, Layout.Alignment.ALIGN_NORMAL, 1, 0, true);
             canvas.save();
@@ -169,7 +169,11 @@ class RCTGMBluetoothService {
 
         Bitmap bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565);
         Canvas canvas = new Canvas(bitmap);
+        Typeface typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD);
+        TextPaint tPaint = new TextPaint();
+        tPaint.setTypeface(typeface);
         Paint paint = new Paint();
+        paint.setTypeface(typeface);
         paint.setColor(Color.BLACK);
         paint.setTextSize(textSize);
         paint.setTextAlign(Paint.Align.LEFT);
@@ -194,20 +198,20 @@ class RCTGMBluetoothService {
         int w1 = (int) (x2 -x1);
         int w2 = (int) (width - x2);
         // canvas.drawText(name, x1, y1, paint);
-        drawMuitiLineText(canvas, paint, name, textSize, tdSizeMiddle, tdSizeSmall, adjustTextHeight, w1, x1, y1);
+        drawMuitiLineText(canvas, paint, tPaint, name, textSize, tdSizeMiddle, tdSizeSmall, adjustTextHeight, w1, x1, y1);
         // canvas.drawText(spec, x1, y2, paint);
-        drawMuitiLineText(canvas, paint, spec, textSize, tdSizeMiddle, tdSizeSmall, adjustTextHeight, w1, x1, y2);
+        drawMuitiLineText(canvas, paint, tPaint, spec, textSize, tdSizeMiddle, tdSizeSmall, adjustTextHeight, w1, x1, y2);
         // canvas.drawText(principal, x1, y3, paint);
-        drawMuitiLineText(canvas, paint, principal, textSize, tdSizeMiddle, tdSizeSmall, adjustTextHeight, w1, x1, y3);
+        drawMuitiLineText(canvas, paint, tPaint, principal, textSize, tdSizeMiddle, tdSizeSmall, adjustTextHeight, w1, x1, y3);
         // canvas.drawText(code, x2, y1, paint);
-        drawMuitiLineText(canvas, paint, code, textSize, tdSizeMiddle, tdSizeSmall, adjustTextHeight, w2, x2, y1);
+        drawMuitiLineText(canvas, paint, tPaint, code, textSize, tdSizeMiddle, tdSizeSmall, adjustTextHeight, w2, x2, y1);
         // canvas.drawText(material, x2, y2, paint);
-        drawMuitiLineText(canvas, paint, material, textSize, tdSizeMiddle, tdSizeSmall, adjustTextHeight, w2, x2, y2);
+        drawMuitiLineText(canvas, paint, tPaint, material, textSize, tdSizeMiddle, tdSizeSmall, adjustTextHeight, w2, x2, y2);
         // canvas.drawText(supplier, x2, y3, paint);
-        drawMuitiLineText(canvas, paint, supplier, textSize, tdSizeMiddle, tdSizeSmall, adjustTextHeight, w2, x2, y3);
+        drawMuitiLineText(canvas, paint, tPaint, supplier, textSize, tdSizeMiddle, tdSizeSmall, adjustTextHeight, w2, x2, y3);
 
         // canvas.drawText(description, x3, y4, paint);
-        drawMuitiLineText(canvas, paint, description, textSize, tdSizeMiddle, tdSizeSmall, adjustTextHeight, width, x3, y4);
+        drawMuitiLineText(canvas, paint, tPaint, description, textSize, tdSizeMiddle, tdSizeSmall, adjustTextHeight, width, x3, y4);
 
         int labelWidth = 0;
         int labelHeight = 0;
