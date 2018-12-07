@@ -447,6 +447,8 @@ public class RCTGMBluetoothModule extends ReactContextBaseJavaModule implements 
 
         String qrContent = options.hasKey("qrContent") ? options.getString("qrContent") : "testQrcontent";
         float textSize = options.hasKey("textSize") ? (float) options.getDouble("textSize") : 16;
+        float tdSizeSmall = options.hasKey("tdSizeSmall") ? (float) options.getDouble("tdSizeSmall") : 16;
+        float tdSizeMiddle = options.hasKey("tdSizeMiddle") ? (float) options.getDouble("tdSizeMiddle") : 16;
         int rotation = options.hasKey("rotation") ? options.getInt("rotation") : 0;
         int gotoPaper = options.hasKey("gotoPaper") ? options.getInt("gotoPaper") : 0;
         int width = options.hasKey("width") ? options.getInt("width") : 480;
@@ -460,6 +462,8 @@ public class RCTGMBluetoothModule extends ReactContextBaseJavaModule implements 
         float y2 = options.hasKey("y2") ? (float) options.getDouble("y2") : 125;
         float y3 = options.hasKey("y3") ? (float) options.getDouble("y3") : 165;
         float y4 = options.hasKey("y4") ? (float) options.getDouble("y4") : 220;
+        float tdY4Small = options.hasKey("tdY4Small") ? (float) options.getDouble("tdY4Small") : 220;
+        float tdY4Middle = options.hasKey("tdY4Middle") ? (float) options.getDouble("tdY4Middle") : 220;
         float qrY = options.hasKey("qrY") ? (float) options.getDouble("qrY") : 30;
         String name = options.hasKey("name") ? options.getString("name") : "testName";
         String code = options.hasKey("code") ? options.getString("code") : "testCode";
@@ -469,8 +473,8 @@ public class RCTGMBluetoothModule extends ReactContextBaseJavaModule implements 
         String supplier = options.hasKey("supplier") ? options.getString("supplier") : "testSupplier";
         String description = options.hasKey("description") ? options.getString("description") : "this is a long long long long description";
 
-        mBluetoothService.createThenPrint(qrContent, (float) textSize, rotation, gotoPaper, width, height, qrSideLength,
-                x1, x2, x3, qrX, y1, y2, y3, y4, qrY, name, code, spec, material, principal, supplier, description);
+        mBluetoothService.createThenPrint(qrContent, textSize, tdSizeSmall, tdSizeMiddle, rotation, gotoPaper, width, height, qrSideLength,
+                x1, x2, x3, qrX, y1, y2, y3, y4, tdY4Small, tdY4Middle, qrY, name, code, spec, material, principal, supplier, description);
         promise.resolve(true);
     }
 

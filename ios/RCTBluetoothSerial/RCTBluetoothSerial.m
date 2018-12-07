@@ -172,6 +172,8 @@ RCT_EXPORT_METHOD(b3Print:(NSDictionary *)info
     NSLog(@"b3Print");
     NSString *qrContent = [RCTConvert NSString:info[@"qrContent"]];
     float textSize = [RCTConvert float:info[@"textSize"]];
+    float tdSizeSmall = [RCTConvert float:info[@"tdSizeSmall"]];
+    float tdSizeMiddle = [RCTConvert float:info[@"tdSizeMiddle"]];
     int rotation = [RCTConvert int:info[@"rotation"]];
     int gotoPager = [RCTConvert int:info[@"gotoPager"]];
     int width = [RCTConvert int:info[@"width"]];
@@ -185,6 +187,8 @@ RCT_EXPORT_METHOD(b3Print:(NSDictionary *)info
     float y2 = [RCTConvert float:info[@"y2"]];
     float y3 = [RCTConvert float:info[@"y3"]];
     float y4 = [RCTConvert float:info[@"y4"]];
+    float tdY4Small = [RCTConvert float:info[@"tdY4Small"]];
+    float tdY4Middle = [RCTConvert float:info[@"tdY4Middle"]];
     float qrY = [RCTConvert float:info[@"qrY"]];
     NSString *name = [RCTConvert NSString:info[@"name"]];
     NSString *code = [RCTConvert NSString:info[@"code"]];
@@ -194,7 +198,7 @@ RCT_EXPORT_METHOD(b3Print:(NSDictionary *)info
     NSString *supplier = [RCTConvert NSString:info[@"supplier"]];
     NSString *description = [RCTConvert NSString:info[@"description"]];
     
-    [_bleShield createAndPrintImg:qrContent textSize:textSize rotation:rotation gotoPaper:gotoPager width:width height:height qrSideLength:qrSideLength x1:x1 x2:x2 x3:x3 qrX:qrX y1:y1 y2:y2 y3:y3 y4:y4 qrY:qrY name:name code:code spec:spec material:material principal:principal supplier:supplier description:description];
+    [_bleShield createAndPrintImg:qrContent textSize:textSize tdSizeSmall:tdSizeSmall tdSizeMiddle:tdY4Middle rotation:rotation gotoPaper:gotoPager width:width height:height qrSideLength:qrSideLength x1:x1 x2:x2 x3:x3 qrX:qrX y1:y1 y2:y2 y3:y3 y4:y4 tdY4Small:tdY4Small tdY4Middle:tdY4Middle qrY:qrY name:name code:code spec:spec material:material principal:principal supplier:supplier description:description];
     
     resolve(true);
 }

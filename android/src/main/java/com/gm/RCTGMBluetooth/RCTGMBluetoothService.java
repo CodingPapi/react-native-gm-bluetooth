@@ -131,10 +131,10 @@ class RCTGMBluetoothService {
     /** B3 Printer methods **/
     /*********************/
 
-    void createThenPrint(String qrContent, float textSize, int rotation, int gotoPaper,
+    void createThenPrint(String qrContent, float textSize, float tdSizeSmall, float tdSizeMiddle, int rotation, int gotoPaper,
                                  int width, int height, int qrSideLength,
                                  float x1, float x2, float x3, float qrX,
-                                 float y1, float y2, float y3, float y4, float qrY,
+                                 float y1, float y2, float y3, float y4, float tdY4Small, float tdY4Middle, float qrY,
                                  String name, String code, String spec, String material,
                                  String principal, String supplier, String description) {
 
@@ -172,20 +172,24 @@ class RCTGMBluetoothService {
         // draw multi-line description if necessary
         float meaLen = paint.measureText(description);
         float newTextSize = textSize;
-        if (meaLen > (width - x3)) {
+        float newY4 = y4;
+        if (meaLen > width) {
             float temp = meaLen / width;
             if (temp > 2) {
-                newTextSize = textSize - 3 * 2;
+                newTextSize = tdSizeSmall;
+                newY4 = tdY4Small;
             } else if (temp > 1) {
-                newTextSize = textSize - 2 * 2;
+                newTextSize = tdSizeMiddle;
+                newY4 = tdY4Middle;
             } else {
-                newTextSize = textSize - 1 * 2;
+                newTextSize = textSize;
+                newY4 = y4;
             }
             TextPaint tPaint = new TextPaint();
             tPaint.setTextSize(newTextSize);
             StaticLayout staticLayout = new StaticLayout(description, tPaint, width, Layout.Alignment.ALIGN_NORMAL, 1, 0, true);
             canvas.save();
-            canvas.translate(x3, y4);
+            canvas.translate(x3, newY4);
             staticLayout.draw(canvas);
             canvas.restore();
         } else {
