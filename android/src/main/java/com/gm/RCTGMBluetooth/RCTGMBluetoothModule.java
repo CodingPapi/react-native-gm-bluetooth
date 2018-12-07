@@ -445,29 +445,29 @@ public class RCTGMBluetoothModule extends ReactContextBaseJavaModule implements 
     public void b3Print(ReadableMap options, Promise promise) {
         if (D) Log.d(TAG, "b3Print " + options.toString());
 
-        String qrContent = options.hasKey("qrContent") ? options.getString("qrContent") : "";
+        String qrContent = options.hasKey("qrContent") ? options.getString("qrContent") : "testQrcontent";
         float textSize = options.hasKey("textSize") ? (float) options.getDouble("textSize") : 16;
         int rotation = options.hasKey("rotation") ? options.getInt("rotation") : 0;
-        int gotoPaper = options.hasKey("gotoPaper") ? options.getInt("gotoPaper") : 1;
+        int gotoPaper = options.hasKey("gotoPaper") ? options.getInt("gotoPaper") : 0;
         int width = options.hasKey("width") ? options.getInt("width") : 480;
         int height = options.hasKey("height") ? options.getInt("height") : 240;
         int qrSideLength = options.hasKey("qrSideLength") ? options.getInt("qrSideLength") : 150;
-        float x1 = options.hasKey("x1") ? (float) options.getDouble("x1") : 0;
-        float x2 = options.hasKey("x2") ? (float) options.getDouble("x2") : 0;
-        float x3 = options.hasKey("x3") ? (float) options.getDouble("x3") : 0;
-        float qrX = options.hasKey("qrX") ? (float) options.getDouble("qrX") : 0;
-        float y1 = options.hasKey("y1") ? (float) options.getDouble("y1") : 0;
-        float y2 = options.hasKey("y2") ? (float) options.getDouble("y2") : 0;
-        float y3 = options.hasKey("y3") ? (float) options.getDouble("y3") : 0;
-        float y4 = options.hasKey("y4") ? (float) options.getDouble("y4") : 0;
-        float qrY = options.hasKey("qrY") ? (float) options.getDouble("qrY") : 0;
-        String name = options.hasKey("name") ? options.getString("name") : "";
-        String code = options.hasKey("code") ? options.getString("code") : "";
-        String spec = options.hasKey("spec") ? options.getString("spec") : "";
-        String material = options.hasKey("material") ? options.getString("material") : "";
-        String principal = options.hasKey("principal") ? options.getString("principal") : "";
-        String supplier = options.hasKey("supplier") ? options.getString("supplier") : "";
-        String description = options.hasKey("description") ? options.getString("description") : "";
+        float x1 = options.hasKey("x1") ? (float) options.getDouble("x1") : 200;
+        float x2 = options.hasKey("x2") ? (float) options.getDouble("x2") : 340;
+        float x3 = options.hasKey("x3") ? (float) options.getDouble("x3") : 20;
+        float qrX = options.hasKey("qrX") ? (float) options.getDouble("qrX") : 20;
+        float y1 = options.hasKey("y1") ? (float) options.getDouble("y1") : 80;
+        float y2 = options.hasKey("y2") ? (float) options.getDouble("y2") : 125;
+        float y3 = options.hasKey("y3") ? (float) options.getDouble("y3") : 165;
+        float y4 = options.hasKey("y4") ? (float) options.getDouble("y4") : 220;
+        float qrY = options.hasKey("qrY") ? (float) options.getDouble("qrY") : 30;
+        String name = options.hasKey("name") ? options.getString("name") : "testName";
+        String code = options.hasKey("code") ? options.getString("code") : "testCode";
+        String spec = options.hasKey("spec") ? options.getString("spec") : "testSpec";
+        String material = options.hasKey("material") ? options.getString("material") : "testMaterial";
+        String principal = options.hasKey("principal") ? options.getString("principal") : "testPrincipal";
+        String supplier = options.hasKey("supplier") ? options.getString("supplier") : "testSupplier";
+        String description = options.hasKey("description") ? options.getString("description") : "this is a long long long long description";
 
         mBluetoothService.createThenPrint(qrContent, (float) textSize, rotation, gotoPaper, width, height, qrSideLength,
                 x1, x2, x3, qrX, y1, y2, y3, y4, qrY, name, code, spec, material, principal, supplier, description);

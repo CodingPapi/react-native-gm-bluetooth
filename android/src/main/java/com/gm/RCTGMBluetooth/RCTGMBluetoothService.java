@@ -7,6 +7,9 @@ import java.util.UUID;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.text.Layout;
+import android.text.StaticLayout;
+import android.text.TextPaint;
 import android.util.Log;
 
 import com.google.zxing.BarcodeFormat;
@@ -165,7 +168,29 @@ class RCTGMBluetoothService {
         canvas.drawText(code, x2, y1, paint);
         canvas.drawText(material, x2, y2, paint);
         canvas.drawText(supplier, x2, y3, paint);
-        canvas.drawText(description, x3, y4, paint);
+
+        // draw multi-line description if necessary
+        float meaLen = paint.measureText(description);
+        float newTextSize = textSize;
+        if (meaLen > (width - x3)) {
+            float temp = meaLen / width;
+            if (temp > 2) {
+                newTextSize = textSize - 3 * 2;
+            } else if (temp > 1) {
+                newTextSize = textSize - 2 * 2;
+            } else {
+                newTextSize = textSize - 1 * 2;
+            }
+            TextPaint tPaint = new TextPaint();
+            tPaint.setTextSize(newTextSize);
+            StaticLayout staticLayout = new StaticLayout(description, tPaint, width, Layout.Alignment.ALIGN_NORMAL, 1, 0, true);
+            canvas.save();
+            canvas.translate(x3, y4);
+            staticLayout.draw(canvas);
+            canvas.restore();
+        } else {
+            canvas.drawText(description, x3, y4, paint);
+        }
 
         int labelWidth = 0;
         int labelHeight = 0;
@@ -177,7 +202,7 @@ class RCTGMBluetoothService {
             labelHeight = bitmap.getHeight();
         }
 
-        labelHeight = labelHeight > 600 ? 600 : labelHeight;
+        // labelHeight = labelHeight > 600 ? 600 : labelHeight;
 
         Matrix matrix = new Matrix();
         matrix.postRotate(rotation);
