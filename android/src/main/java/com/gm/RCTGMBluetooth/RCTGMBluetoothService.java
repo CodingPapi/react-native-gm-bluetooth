@@ -185,8 +185,9 @@ class RCTGMBluetoothService {
         // third stage, send bitmap object to printer
         Bitmap qrCode = null;
         try {
+            String utfString = new String(qrContent.getBytes("UTF-8"), "ISO-8859-1");
             BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
-            qrCode = barcodeEncoder.encodeBitmap(qrContent, BarcodeFormat.QR_CODE, qrSideLength, qrSideLength);
+            qrCode = barcodeEncoder.encodeBitmap(utfString, BarcodeFormat.QR_CODE, qrSideLength, qrSideLength);
         } catch (Exception e) {
 
         }
