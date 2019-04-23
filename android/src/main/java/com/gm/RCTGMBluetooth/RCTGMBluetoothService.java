@@ -27,6 +27,12 @@ import android.graphics.Paint;
 import android.graphics.Canvas;
 import android.graphics.Typeface;
 
+import com.dothantech.lpapi.LPAPI;
+import com.dothantech.printer.IDzPrinter;
+import com.dothantech.lpapi.LPAPI.Callback;
+import android.os.Looper;
+import android.os.Bundle;
+
 import static com.gm.RCTGMBluetooth.RCTGMBluetoothPackage.TAG;
 
 /**
@@ -49,6 +55,9 @@ class RCTGMBluetoothService {
     private BluetoothAdapter mAdapter;
     private ConnectThread mConnectThread;
     private ConnectedThread mConnectedThread;
+
+    private LPAPIThread mAPIThread;
+
     private RCTGMBluetoothModule mModule;
     private String mState;
 
@@ -57,6 +66,59 @@ class RCTGMBluetoothService {
     private static final String STATE_CONNECTING = "connecting"; // now initiating an outgoing connection
     private static final String STATE_CONNECTED = "connected";  // now connected to a remote device
 
+    private final Callback mCallback = new Callback() {
+
+      /****************************************************************************************************************************************/
+      // 所有回调函数都是在打印线程中被调用，因此如果需要刷新界面，需要发送消息给界面主线程，以避免互斥等繁琐操作。
+      /****************************************************************************************************************************************/
+  
+      // 打印机连接状态发生变化时被调用
+      @Override
+      public void onStateChange(IDzPrinter.PrinterAddress arg0, IDzPrinter.PrinterState arg1) {
+        final IDzPrinter.PrinterAddress printer = arg0;
+        switch (arg1) {
+        case Connected:
+        case Connected2:
+          // 打印机连接成功，发送通知，刷新界面提示
+          setState(STATE_CONNECTED);
+          break;
+  
+        case Disconnected:
+          // 打印机连接失败
+          break;
+  
+        default:
+          break;
+        }
+      }
+  
+      // 蓝牙适配器状态发生变化时被调用
+      @Override
+      public void onProgressInfo(IDzPrinter.ProgressInfo arg0, Object arg1) {
+      }
+  
+      @Override
+      public void onPrinterDiscovery(IDzPrinter.PrinterAddress arg0, IDzPrinter.PrinterInfo arg1) {
+      }
+  
+      // 打印标签的进度发生变化是被调用
+      @Override
+      public void onPrintProgress(IDzPrinter.PrinterAddress address, Object bitmapData, IDzPrinter.PrintProgress progress, Object addiInfo) {
+        switch (progress) {
+        case Success:
+          // 打印标签成功
+          break;
+  
+        case Failed:
+          // 打印标签失败
+          break;
+  
+        default:
+          break;
+        }
+      }
+    };
+  
     /**
      * Constructor. Prepares a new RCTGMBluetoothModule session.
      * @param module Module which handles service events
@@ -82,11 +144,16 @@ class RCTGMBluetoothService {
             cancelConnectThread(); // Cancel any thread attempting to make a connection
         }
 
-        cancelConnectedThread(); // Cancel any thread currently running a connection
+        cancelLPAPIThread();
+        mAPIThread = new LPAPIThread();
+        mAPIThread.start();
+        mAPIThread.connect(device);
+
+        // cancelConnectedThread(); // Cancel any thread currently running a connection
 
         // Start the thread to connect with the given device
-        mConnectThread = new ConnectThread(device);
-        mConnectThread.start();
+        // mConnectThread = new ConnectThread(device);
+        // mConnectThread.start();
         setState(STATE_CONNECTING);
     }
 
@@ -229,7 +296,10 @@ class RCTGMBluetoothService {
         Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
         bitmap.recycle();
 
-        performPrint(rotatedBitmap, gotoPaper);
+        // api.printBitmap(rotatedBitmap, null);
+        mAPIThread.printBitmap(rotatedBitmap, getPrintParam());
+
+        // performPrint(rotatedBitmap, gotoPaper);
 
     }
 
@@ -326,6 +396,24 @@ class RCTGMBluetoothService {
         gzipData[gzipData.length - 2] = (byte) ((int) (crc >> 16 & 255L));
         gzipData[gzipData.length - 1] = (byte) ((int) (crc >> 24 & 255L));
         return gzipData;
+    }
+
+    public Bundle getPrintParam() {
+      Bundle param = new Bundle();
+      // 设置打印浓度，打印浓度范围为 0 - 14之间的任意数字，0最淡，14最浓；
+      param.putInt(LPAPI.PrintParamName.PRINT_DARKNESS, LPAPI.PrintParamValue.MAX_PRINT_DARKNESS);
+      // 设置打印速度，打印速度范围为 0 - 4之间的任意数字，0表示最慢，4表示最快；
+      param.putInt(LPAPI.PrintParamName.PRINT_SPEED, LPAPI.PrintParamValue.DEFAULT_PRINT_SPEED);
+      // 设置纸张类型，纸张类型范围为 0 - 3，0表示连续纸，1表示定位孔，2表示间隙纸，3表示黑标纸；
+      param.putInt(LPAPI.PrintParamName.GAP_TYPE, LPAPI.PrintParamValue.GAP_GAP);
+      // 设置打印份数，值为任意正整数；
+      param.putInt(LPAPI.PrintParamName.PRINT_COPIES, 1);
+      // 打印方向，0表示不旋转，1表示90旋转，2表示180度旋转，3表示270度先转；
+      param.putInt(LPAPI.PrintParamName.PRINT_DIRECTION, 0);
+      // 设置图片转换为黑白图片的阀值，小于阀值显示黑色，大于阀值显示白色；
+      param.putInt(LPAPI.PrintParamName.IMAGE_THRESHOLD, 128);
+      
+      return param;
     }
 
 
@@ -556,6 +644,61 @@ class RCTGMBluetoothService {
             } catch (Exception e) {
                 Log.e(TAG, "close() of connect socket failed", e);
             }
+        }
+    }
+
+    private class LPAPIThread extends Thread {
+        private BluetoothDevice mDevice;
+        private LPAPI api;
+
+        LPAPIThread() {
+        }
+
+        public void run() {
+            Log.i(TAG, "BEGIN LPAPIThread");
+            Looper.prepare();
+            api = LPAPI.getApi(mCallback);
+            Looper.loop();
+
+
+            // // Keep listening to the InputStream while connected
+            // while (true) {
+            //     try {
+            //         bytes = mmInStream.read(buffer); // Read from the InputStream
+            //         String data = new String(buffer, 0, bytes, "ISO-8859-1");
+
+            //         mModule.onData(data); // Send the new data String to the UI Activity
+            //     } catch (Exception e) {
+            //         Log.e(TAG, "disconnected", e);
+            //         mModule.onError(e);
+            //         connectionLost();
+            //         RCTGMBluetoothService.this.stop(); // Start the service over to restart listening mode
+            //         break;
+            //     }
+            // }
+        }
+
+        public void connect(BluetoothDevice device) {
+          mDevice = device;
+          api.openPrinter(device);
+        }
+
+        public void printBitmap(Bitmap bp, Bundle param) {
+          api.printBitmap(bp, param);
+        }
+
+        public void printBitmap(Bitmap bp) {
+          api.printBitmap(bp, null);
+        }
+
+    }
+    /**
+     * Cancel connected thread
+     */
+    private void cancelLPAPIThread () {
+        if (mAPIThread != null) {
+            mAPIThread.cancel();
+            mAPIThread = null;
         }
     }
 }
