@@ -60,6 +60,7 @@ class RCTGMBluetoothService {
 
     private RCTGMBluetoothModule mModule;
     private String mState;
+    private String currentDeviceName;
 
     // Constants that indicate the current connection state
     private static final String STATE_NONE = "none";       // we're doing nothing
@@ -129,6 +130,10 @@ class RCTGMBluetoothService {
         mModule = module;
     }
 
+    private boolean isB50(String name) {
+      return name != null && name.indexOf('-') > 0;
+    }
+
     /********************************************/
     /** Methods available within whole package **/
     /********************************************/
@@ -143,17 +148,22 @@ class RCTGMBluetoothService {
         if (mState.equals(STATE_CONNECTING)) {
             cancelConnectThread(); // Cancel any thread attempting to make a connection
         }
+        currentDeviceName = device.getName();
 
-        cancelLPAPIThread();
-        mAPIThread = new LPAPIThread();
-        mAPIThread.start();
-        mAPIThread.connect(device);
+        if (isB50(currentDeviceName)) {
+          cancelLPAPIThread();
+          mAPIThread = new LPAPIThread();
+          mAPIThread.start();
+          mAPIThread.connect(device);
+        } else {
+          cancelConnectedThread(); // Cancel any thread currently running a connection
 
-        // cancelConnectedThread(); // Cancel any thread currently running a connection
+          //Start the thread to connect with the given device
+          mConnectThread = new ConnectThread(device);
+          mConnectThread.start();
 
-        // Start the thread to connect with the given device
-        // mConnectThread = new ConnectThread(device);
-        // mConnectThread.start();
+        }
+
         setState(STATE_CONNECTING);
     }
 
@@ -296,8 +306,11 @@ class RCTGMBluetoothService {
         Bitmap rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
         bitmap.recycle();
 
-        // api.printBitmap(rotatedBitmap, null);
-        mAPIThread.printBitmap(rotatedBitmap, getPrintParam());
+        if (isB50(currentDeviceName)) {
+          mAPIThread.printBitmap(rotatedBitmap, getPrintParam());
+        } else {
+          performPrint(rotatedBitmap, gotoPaper);
+        }
 
         // performPrint(rotatedBitmap, gotoPaper);
 
@@ -689,6 +702,9 @@ class RCTGMBluetoothService {
 
         public void printBitmap(Bitmap bp) {
           api.printBitmap(bp, null);
+        }
+
+        void cancel() {
         }
 
     }
