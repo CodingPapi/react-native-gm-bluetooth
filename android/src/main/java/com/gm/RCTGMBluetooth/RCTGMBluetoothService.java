@@ -96,6 +96,11 @@ class RCTGMBluetoothService {
       // 蓝牙适配器状态发生变化时被调用
       @Override
       public void onProgressInfo(IDzPrinter.ProgressInfo arg0, Object arg1) {
+        if (arg0 == IDzPrinter.ProgressInfo.DeviceBonded) {
+          setState(STATE_CONNECTING);
+        } else {
+          setState(STATE_NONE);
+        }
       }
   
       @Override
@@ -131,7 +136,9 @@ class RCTGMBluetoothService {
     }
 
     private boolean isB50(String name) {
-      return name != null && name.indexOf('-') > 0;
+      boolean isB50 = name != null && name.indexOf('-') > 0;
+      Log.d(TAG, "isB50, name:" + name + ",result:" + isB50);
+      return isB50;
     }
 
     /********************************************/
@@ -152,9 +159,9 @@ class RCTGMBluetoothService {
 
         if (isB50(currentDeviceName)) {
           cancelLPAPIThread();
-          mAPIThread = new LPAPIThread();
+          mAPIThread = new LPAPIThread(device);
           mAPIThread.start();
-          mAPIThread.connect(device);
+          // mAPIThread.connect(device);
         } else {
           cancelConnectedThread(); // Cancel any thread currently running a connection
 
@@ -664,13 +671,15 @@ class RCTGMBluetoothService {
         private BluetoothDevice mDevice;
         private LPAPI api;
 
-        LPAPIThread() {
+        LPAPIThread(BluetoothDevice device) {
+          mDevice = device;
         }
 
         public void run() {
             Log.i(TAG, "BEGIN LPAPIThread");
             Looper.prepare();
             api = LPAPI.getApi(mCallback);
+            api.openPrinter(mDevice);
             Looper.loop();
 
 
@@ -692,8 +701,9 @@ class RCTGMBluetoothService {
         }
 
         public void connect(BluetoothDevice device) {
-          mDevice = device;
-          api.openPrinter(device);
+          Log.i(TAG, "start connect");
+          // mDevice = device;
+          // api.openPrinter(device);
         }
 
         public void printBitmap(Bitmap bp, Bundle param) {
